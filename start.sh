@@ -1,2 +1,2 @@
 #!/bin/bash
-unicorn main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --timeout 120
+gunicorn main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --timeout 120
