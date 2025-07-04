@@ -1,6 +1,5 @@
 from enum import Enum
 from datetime import datetime
-from traceback import print_tb
 from typing import List, Optional
 from pydantic import BaseModel, Field, conint, constr, validator
 from uuid import uuid4
@@ -100,14 +99,6 @@ class Questionnaire(BaseModel):
             )
         return v
 
-# class FairyTaleRequest(BaseModel):
-#     prompt: str = Field(..., max_length=5000, description="Полный промпт для генерации сказки")
-#
-# class FairyTaleResponse(BaseModel):
-#     status: str = Field(..., example="success")
-#     fairy_tale: str = Field(..., description="Сгенерированный текст сказки")
-#     model: str = Field(..., description="Использованная модель ИИ")
-#     usage: dict = Field(..., description="Информация об использовании токенов")
 
 class ContinuationType(str, Enum):
     ORIGINAL = "original"
