@@ -1,6 +1,10 @@
 from enum import Enum
+from datetime import datetime
+from traceback import print_tb
 from typing import List, Optional
 from pydantic import BaseModel, Field, conint, constr, validator
+from uuid import uuid4
+
 
 class GenderEnum(str, Enum):
     BOY = "Мальчик"
@@ -104,3 +108,43 @@ class Questionnaire(BaseModel):
 #     fairy_tale: str = Field(..., description="Сгенерированный текст сказки")
 #     model: str = Field(..., description="Использованная модель ИИ")
 #     usage: dict = Field(..., description="Информация об использовании токенов")
+
+class ContinuationType(str, Enum):
+    ORIGINAL = "original"
+    CONTINUATION = "continuation"
+
+class FairyTale(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    title: str
+    created_at: datetime = Field(default_factory=datetime.today)
+    duration_minutes: int
+    continuation_type: ContinuationType = Field(ContinuationType.ORIGINAL)
+    base_tale_id: Optional[str] = None  # Для продолжений - ID оригинальной сказки
+    preview_image: Optional[str] = None
+
+
+class Collection(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    title: str
+    created_at: datetime = Field(default_factory=datetime.now)
+    fairy_tales: List[FairyTale] = Field(
+        default_factory=list,
+        description="Список сказок в сборнике"
+    )
+    is_continuation: bool = False  # Флаг, что сборник создан для продолжения
+    preview_image: Optional[str] = None
+
+    @property
+    def total_duration_minutes(self) -> int:
+        """Вычисляемое свойство: общая длительность сборника"""
+        return sum(tale.duration_minutes for tale in self.fairy_tales)
+
+    @property
+    def tales_count(self) -> int:
+        """Вычисляемое свойство: количество сказок"""
+        return len(self.fairy_tales)
+
+
+class HomePageData(BaseModel):
+    recent_tales: List[FairyTale]
+    collections: List[Collection]
