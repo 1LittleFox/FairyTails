@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import questionnaire, home
+from app.routers import questionnaire, home, connect_gpt
 
 app = FastAPI()
 
@@ -9,7 +9,7 @@ origins = [
     "http://127.0.0.1:8000",
     "http://127.0.0.1:8000/questionnaire",
     "http://127.0.0.1:8000/home",
-    "http://127.0.0.1:8000/hi"
+    "http://127.0.0.1:8000/generate-tale"
 ]
 
 app.add_middleware(
@@ -22,10 +22,8 @@ app.add_middleware(
 
 app.include_router(questionnaire.router)
 app.include_router(home.router)
+app.include_router(connect_gpt.router)
 
-@app.post("/hi")
-async def submit_questionnaire():
-    print("hi")
 
 # # Эндпоинт для получения данных анкеты
 # @app.post("/questionnaire", status_code=status.HTTP_201_CREATED)
