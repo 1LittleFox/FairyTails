@@ -19,6 +19,9 @@ async def generate_tale(data: Questionnaire):
         response = await client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=[
+                {"role": "system", "content": "Ты — сказочник, создающий развивающие сказки для детей, "
+                                              "с учётом культурных традиций и педагогических целей. "
+                                              "Сочини сказку для вслухового чтения по следующим параметрам:"},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7,

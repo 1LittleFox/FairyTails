@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import questionnaire, home, connect_gpt
+from app.routers import  home, connect_gpt
 
 app = FastAPI()
 
@@ -20,6 +20,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(questionnaire.router)
 app.include_router(home.router)
 app.include_router(connect_gpt.router)

@@ -1,7 +1,8 @@
+import re
 from enum import Enum
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, Field, conint, constr, validator
+from pydantic import BaseModel, Field, conint, validator
 from uuid import uuid4
 
 
@@ -13,10 +14,12 @@ class GenderEnum(str, Enum):
 class InterestCategory(str, Enum):
     ANIMALS = "Животные"
     VEHICLES = "Транспорт"
-    PRINCESSES = "Принцессы/Волшебницы"
-    SUPERHEROES = "Супергерои/Космонавты"
-    FABULOUS_CREATURES = "Волшебные существа"
-    ORDINARY_PEOPLE = "Обычные дети/Люди"
+    MAGIK = "Магия"
+    PRINCESSES = "Принцессы"
+    SUPERHEROES = "Супергерои"
+    ASTRONAUTS = "Космонавты"
+    FABULOUS_CREATURES = "Сказочные существа"
+    ORDINARY_PEOPLE = "Обычные дети/взрослые"
     OTHER = "Другое"
 
 class SoftSkillEnum(str, Enum):
@@ -41,63 +44,106 @@ class SoftSkillEnum(str, Enum):
     FLEXIBILITY = "Гибкость"
     ETIQUETTE = "Этикет"
 
+
 class EthnographyEnum(str, Enum):
-    RUSSIAN = "Русская"
-    EUROPEAN = "Европейская"
-    ORIENTAL = "Восточная"
-    AFRICAN = "Африканская"
+    GERMAN = "Германские"
+    SLAVIC = "Славянские"
+    CAUCASIAN = "Кавказские"
+    TURKIC = "Тюркские"
+    FRENCH = "Французские"
+    SCANDINAVIAN = "Скандинавские"
+    ENGLISH_AND_IRISH = "Английские и Ирландские"
+    ITALIAN = "Итальянские"
+    SPANISH_AND_PORTUGUESE = "Испанские и Португальские"
+    GREEK = "Греческие"
+    PERSIAN = "Персидские"
+    INDIAN = "Индийские"
+    CHINESE = "Китайские"
+    JAPANESE = "Японские"
+    JEWISH = "Еврейские"
+
 
 class LanguageEnum(str, Enum):
     RUSSIAN = "русском"
     ENGLISH = "английском"
-    SPANISH = "испанском"
-    GERMAN = "немецком"
+    SPANISH = "французский"
 
 class Questionnaire(BaseModel):
-    language: LanguageEnum = Field(
-        default=LanguageEnum.ENGLISH,
-        description="Язык сказки"
-    )
-    age_years: conint(ge=0) = Field(..., description="Возраст в полных годах")
+    age_years: conint(ge=0, le=99) = Field(..., description="Возраст в полных годах")
     age_months: conint(ge=0, le=11) = Field(..., description="Месяцы")
-    gender: GenderEnum = Field(..., description="Пол ребёнка")
-    interests: List[InterestCategory] = Field(
+
+    interest_category: InterestCategory = Field(
         ...,
         description="Категории интересов ребёнка"
     )
-    specific_interests: Optional[List[str]] = Field(
-        None,
-        description="Конкретные интересы внутри категорий"
+
+    subcategories: List[str] = Field(
+        ...,
+        description="Конкретные интересы внутри выбранной категории"
     )
-    other_interest: Optional[str] = Field(
-        None,
-        max_length=100,
-        description="Другой интерес (указать)"
-    )
-    target_words: List[constr(min_length=1, max_length=20)] = Field(
+
+    target_words: List[str] = Field(
         ...,
         description="Целевые слова/звуки для включения в сказку"
     )
-    soft_skills: List[SoftSkillEnum] = Field(
-        ...,
-        description="Развиваемые мягкие навыки (не более 3)"
-    )
+
     story_duration_minutes: conint(ge=1, le=60) = Field(
         ...,
         description="Длительность сказки в минутах (не более 60)"
     )
+
+    soft_skills: SoftSkillEnum = Field(
+        ...,
+        description="Развиваемые мягкие навыки (не более 3)"
+    )
+
     ethnography_choice: EthnographyEnum = Field(
         ...,
         description="Этнографическая характеристика сказки"
     )
 
-    @validator('other_interest', always=True)
-    def validate_other_interest(cls, v, values):
-        if 'interests' in values and InterestCategory.OTHER in values['interests'] and not v:
-            raise ValueError(
-                "Требуется указать другой интерес, когда выбрана категория 'Другое'"
-            )
-        return v
+    language: LanguageEnum = Field(
+        default=LanguageEnum.ENGLISH,
+        description="Язык сказки"
+    )
+
+    gender: GenderEnum = Field(
+        ...,
+        description="Пол ребёнка"
+    )
+
+
+    @validator('subcategories', always=True)
+    def validate_subcategories(cls, subcategory_values, values):
+        """Базовая валидация подкатегорий"""
+        if len(subcategory_values) < 1:
+            raise ValueError("Нужно выбрать хотя бы один интерес")
+
+        for item in subcategory_values:
+            if not (isinstance(item, str) and item.strip()):
+                raise ValueError("Отправлены пустые значения")
+
+        if not re.match(r"^[a-zA-Zа-яА-ЯёЁ\-]+$", subcategory_values[0]):
+            raise ValueError("Используйте только буквы и дефис")
+
+        category = values.get('interest_category')
+        # Для MVP проверяем только общие ограничения
+
+        if category == InterestCategory.OTHER:
+            if len(subcategory_values) != 1:
+                raise ValueError("Нужно выбрать один интерес")
+            if len(subcategory_values[0].split()) > 1:
+                raise ValueError("Для категории 'Другое' допустимо только одно слово")
+
+        return subcategory_values
+
+    @validator('target_words', always=True)
+    def validate_target_words(cls, target_words):
+        if len(target_words) < 1:
+            raise ValueError("Минимум 1 слово")
+        if len(target_words) > 3:
+            raise ValueError("Максимум 3 слова")
+        return target_words
 
 
 class ContinuationType(str, Enum):
