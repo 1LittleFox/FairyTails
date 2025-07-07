@@ -1,5 +1,6 @@
 from pathlib import Path
 import uuid
+import aiofiles
 from fastapi import APIRouter, HTTPException, Body
 from fastapi.responses import FileResponse
 from openai import AsyncOpenAI
@@ -28,7 +29,10 @@ async def generate_voiceover(tale: str = Body(..., embed=True)):
           input=tale
         )
 
-        await response.write_to_file(speech_file_path)
+        # Асинхронное чтение и сохранение данных
+        async with aiofiles.open(speech_file_path, "wb") as f:
+          async for chunk in await response.aiter_bytes():
+            await f.write(chunk)
 
         return FileResponse(
           path=speech_file_path,

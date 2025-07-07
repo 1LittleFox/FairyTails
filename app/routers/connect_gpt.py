@@ -6,7 +6,7 @@ from app.services.prompt_builder import prompt_system_builder, prompt_user_build
 
 router = APIRouter()
 
-OPENAI_MODEL = "gpt-3.5-turbo"  # Или "gpt-3.5-turbo" для экономии
+OPENAI_MODEL = "GPT-4o"  # Или "gpt-3.5-turbo" для экономии
 
 @router.post("/generate-tales")
 async def generate_tale(data: Questionnaire):
@@ -32,8 +32,7 @@ async def generate_tale(data: Questionnaire):
         # TODO: Сохранение в БД (реализуем позже)
         # await save_to_db(tale_text, questionnaire)
 
-        return {"system": system,
-                "prompt": prompt,
+        return {
                 "tale": tale_text
                 }
     except Exception as e:
