@@ -6,7 +6,7 @@ from app.services.prompt_builder import prompt_system_builder, prompt_user_build
 
 router = APIRouter()
 
-OPENAI_MODEL = "GPT-4o"  # Или "gpt-3.5-turbo" для экономии
+OPENAI_MODEL = "gpt-4-0125-preview"  # Или "gpt-3.5-turbo" для экономии
 
 @router.post("/generate-tales")
 async def generate_tale(data: Questionnaire):
@@ -19,12 +19,16 @@ async def generate_tale(data: Questionnaire):
 
         response = await client.chat.completions.create(
             model=OPENAI_MODEL,
+            response_format={"type": "json_object"},
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": prompt}
             ],
-            temperature=1.1,
-            max_tokens=3500
+            temperature=0.3,
+            max_tokens=3500,
+            top_p=0.95,
+            frequency_penalty=0.5,
+            presence_penalty=0.3
         )
 
         tale_text = response.choices[0].message.content
@@ -33,7 +37,8 @@ async def generate_tale(data: Questionnaire):
         # await save_to_db(tale_text, questionnaire)
 
         return {
-                "tale": tale_text
+            "prompt": system+prompt,
+            "tale": tale_text
                 }
     except Exception as e:
         raise HTTPException(
