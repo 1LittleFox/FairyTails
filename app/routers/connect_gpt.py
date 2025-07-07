@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from openai import AsyncOpenAI
 from app.config import config
 from app.schemas import Questionnaire
-from app.services.prompt_builder import prompt_builder
+from app.services.prompt_builder import prompt_system_builder, prompt_user_builder
 
 router = APIRouter()
 
@@ -14,18 +14,17 @@ async def generate_tale(data: Questionnaire):
 
         client = AsyncOpenAI(api_key=config.OPENAI_API_KEY.get_secret_value())
 
-        prompt = prompt_builder(data)
+        system = prompt_system_builder()
+        prompt = prompt_user_builder(data)
 
         response = await client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=[
-                {"role": "system", "content": "Ты — сказочник, создающий развивающие сказки для детей, "
-                                              "с учётом культурных традиций и педагогических целей. "
-                                              "Сочини сказку для вслухового чтения по следующим параметрам:"},
+                {"role": "system", "content": system},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.7,
-            max_tokens=2000
+            temperature=1.1,
+            max_tokens=3500
         )
 
         tale_text = response.choices[0].message.content
@@ -33,7 +32,10 @@ async def generate_tale(data: Questionnaire):
         # TODO: Сохранение в БД (реализуем позже)
         # await save_to_db(tale_text, questionnaire)
 
-        return {"tale": tale_text}
+        return {"system": system,
+                "prompt": prompt,
+                "tale": tale_text
+                }
     except Exception as e:
         raise HTTPException(
             status_code=500,
