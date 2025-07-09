@@ -1,3 +1,4 @@
+# config.py
 from pydantic import SecretStr, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -10,6 +11,7 @@ class Settings(BaseSettings):
     # TTS_API_KEY: SecretStr = Field(default=None)
     # DB_PASSWORD: SecretStr = Field(default=None)
 
+
     # Настройки приложения
     APP_ENV: str = "development"
     LOG_LEVEL: str = "INFO"
@@ -20,7 +22,5 @@ class Settings(BaseSettings):
         extra="ignore"
     )
 
-    # Создаем экземпляр настроек
-
-
+# Создаем экземпляр настроек
 config = Settings()

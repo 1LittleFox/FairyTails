@@ -36,6 +36,7 @@ async def generate_tale(data: Questionnaire):
 
         # Парсим JSON ответ
         tale_data = json.loads(response.choices[0].message.content)
+
         tale_text = tale_data['tale']
 
         # TODO: Сохранение в БД (реализуем позже)

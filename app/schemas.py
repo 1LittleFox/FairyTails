@@ -1,8 +1,9 @@
+# schemas.py
 import re
 from enum import Enum
-from datetime import datetime
-from typing import List, Optional
-from pydantic import BaseModel, Field, conint, validator
+from datetime import datetime, date
+from typing import List, Optional, Dict, Union
+from pydantic import BaseModel, Field, conint, validator, UUID4
 from uuid import uuid4
 
 
@@ -66,7 +67,7 @@ class EthnographyEnum(str, Enum):
 class LanguageEnum(str, Enum):
     RUSSIAN = "русском"
     ENGLISH = "английском"
-    SPANISH = "французский"
+    SPANISH = "французском"
 
 class Questionnaire(BaseModel):
     age_years: conint(ge=0, le=99) = Field(..., description="Возраст в полных годах")
@@ -185,3 +186,49 @@ class Collection(BaseModel):
 class HomePageData(BaseModel):
     recent_tales: List[FairyTale]
     collections: List[Collection]
+
+"""Схемы данных для отправки на фронт"""
+
+class EthnographyOption(BaseModel):
+    name: str
+    description: str
+
+class InterestSubcategories(BaseModel):
+    id: int
+    name: str
+
+class InterestCategories(BaseModel):
+    id: int
+    name: str
+
+class OptionsResponse(BaseModel):
+    ethnography: List[EthnographyOption]
+    genders: List[str]
+    interests: Dict[str, List[Union[InterestCategories, Dict[str, List[InterestSubcategories]]]]]
+    soft_skills: List[str]
+    languages: List[str]
+
+# Модели для моков
+class CollectionSchema(BaseModel):
+    id: UUID4
+    title_line1: str  # Первая строка названия
+    created_at: date
+    duration_min: int
+    duration_text: str  # Форматированная продолжительность
+
+class StoryPreviewSchema(BaseModel):
+    id: UUID4
+    title_line1: str  # Первая строка названия
+    created_at: date
+    duration_min: int
+
+class CollectionsResponseSchema(BaseModel):
+    collections: list[CollectionSchema]
+    stories: list[StoryPreviewSchema]
+
+class UserCollectionsResponseSchema(BaseModel):
+    collections: list[CollectionSchema]  # Для экрана "Ваши сборники"
+
+class CollectionDetailsSchema(BaseModel):
+    title_line1: str
+    stories: list[StoryPreviewSchema]
