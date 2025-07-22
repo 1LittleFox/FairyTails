@@ -1,15 +1,20 @@
 # config.py
+import os
+
 from pydantic import SecretStr, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class Settings(BaseSettings):
     # OpenAI
-    OPENAI_API_KEY: SecretStr = Field(..., min_length=32)
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
     # Другие секреты (пример)
     # TTS_API_KEY: SecretStr = Field(default=None)
-    # DB_PASSWORD: SecretStr = Field(default=None)
+    DB_PASSWORD: SecretStr = Field(default=None)
 
 
     # Настройки приложения
@@ -22,5 +27,4 @@ class Settings(BaseSettings):
         extra="ignore"
     )
 
-# Создаем экземпляр настроек
-config = Settings()
+settings = Settings()

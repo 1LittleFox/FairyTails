@@ -80,42 +80,6 @@ def generate_mock_collections() -> CollectionsResponseSchema:
         stories=stories
     )
 
-
-def generate_mock_user_collections() -> UserCollectionsResponseSchema:
-    """Генерация данных для экрана 'Ваши сборники'"""
-    collections = [
-        CollectionSchema(
-            id=uuid.uuid4(),
-            title_line1="Сказки про не спящего Дракона кешу",
-            created_at=date(2025, 6, 19),
-            duration_min=20,
-            duration_text="90 минут"
-        ),
-        CollectionSchema(
-            id=uuid.uuid4(),
-            title_line1="Встающее солнце по утру",
-            created_at=date(2025, 6, 19),
-            duration_min=40,
-            duration_text="60 минут"
-        ),
-        CollectionSchema(
-            id=uuid.uuid4(),
-            title_line1="Вини-Пух",
-            created_at=date(2025, 6, 19),
-            duration_min=50,
-            duration_text="50 минут"
-        ),
-        CollectionSchema(
-            id=uuid.uuid4(),
-            title_line1="Мечтательная Алина",
-            created_at=date(2025, 6, 19),
-            duration_min=20,
-            duration_text="17 минут"
-        )
-    ]
-
-    return UserCollectionsResponseSchema(collections=collections)
-
 def generate_mock_collection_details(collection_id: uuid.UUID) -> CollectionDetailsSchema:
     """Генерация данных для конкретной коллекции"""
     # Определяем заголовок коллекции по ID

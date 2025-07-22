@@ -1,5 +1,6 @@
 # schemas.py
 import re
+import uuid
 from enum import Enum
 from datetime import datetime, date
 from typing import List, Optional, Dict, Union
@@ -46,6 +47,11 @@ class SoftSkillEnum(str, Enum):
     ETIQUETTE = "Этикет"
 
 
+class SubscriptionStatus(str, Enum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+
+
 class EthnographyEnum(str, Enum):
     GERMAN = "Германские"
     SLAVIC = "Славянские"
@@ -67,7 +73,7 @@ class EthnographyEnum(str, Enum):
 class LanguageEnum(str, Enum):
     RUSSIAN = "русском"
     ENGLISH = "английском"
-    SPANISH = "французском"
+    FRENCH = "французском"
 
 class Questionnaire(BaseModel):
     age_years: conint(ge=0, le=99) = Field(..., description="Возраст в полных годах")
@@ -147,6 +153,7 @@ class Questionnaire(BaseModel):
         return target_words
 
 
+
 class ContinuationType(str, Enum):
     ORIGINAL = "original"
     CONTINUATION = "continuation"
@@ -210,16 +217,14 @@ class OptionsResponse(BaseModel):
 
 # Модели для моков
 class CollectionSchema(BaseModel):
-    id: UUID4
-    title_line1: str  # Первая строка названия
-    created_at: date
-    duration_min: int
-    duration_text: str  # Форматированная продолжительность
+    title: str
+    created_at: datetime
+    duration: str
 
 class StoryPreviewSchema(BaseModel):
     id: UUID4
     title_line1: str  # Первая строка названия
-    created_at: date
+    created_at: str
     duration_min: int
 
 class CollectionsResponseSchema(BaseModel):
@@ -232,3 +237,13 @@ class UserCollectionsResponseSchema(BaseModel):
 class CollectionDetailsSchema(BaseModel):
     title_line1: str
     stories: list[StoryPreviewSchema]
+
+# Request/Response models
+class UserAccessRequest(BaseModel):
+    user_id: Optional[uuid.UUID] = None
+
+class StoryGenerationResponse(BaseModel):
+    user_id: uuid.UUID
+    created_at: datetime
+    content: str
+    url: str

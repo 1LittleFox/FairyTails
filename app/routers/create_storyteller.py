@@ -4,8 +4,12 @@ import aiofiles
 from fastapi import APIRouter, HTTPException, Body
 from fastapi.responses import FileResponse
 from openai import AsyncOpenAI
-from app.config import config
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 router = APIRouter()
 OPENAI_MODEL = "tts-1-hd"
 MAX_TEXT_LENGTH = 4096
@@ -19,7 +23,7 @@ async def generate_voiceover(tale: str = Body(..., embed=True)):
                 detail=f"Текст превышает лимит в {MAX_TEXT_LENGTH} символов"
             )
 
-        client = AsyncOpenAI(api_key=config.OPENAI_API_KEY.get_secret_value())
+        client = AsyncOpenAI(api_key=OPENAI_API_KEY)
         speech_file = f"speech_{uuid.uuid4().hex}.mp3"
         speech_file_path = Path(__file__).parent / speech_file
 

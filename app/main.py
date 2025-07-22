@@ -2,8 +2,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import  (home, connect_gpt,
-                          create_storyteller, questionnaire_options, fairytales_section, user_collections, collections_detail)
+from app.routers import  (home,
+                          create_storyteller, questionnaire_options, user_collections,
+                          collections_detail, generation)
 
 app = FastAPI()
 
@@ -21,9 +22,8 @@ app.add_middleware(
 )
 
 app.include_router(home.router)
-app.include_router(connect_gpt.router)
-app.include_router(create_storyteller.router)
+# app.include_router(create_storyteller.router)
 app.include_router(questionnaire_options.router)
-app.include_router(fairytales_section.router)
 app.include_router(user_collections.router)
 app.include_router(collections_detail.router)
+app.include_router(generation.router)
