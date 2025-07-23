@@ -9,7 +9,7 @@ from app.services.conversion_time import seconds_to_hms
 
 router = APIRouter()
 
-@router.get("/fairy_tails/{user_id}", response_model=FairyTailsResponseSchema)
+@router.get("/users/{user_id}/fairy_tails/", response_model=FairyTailsResponseSchema)
 async def get_all_fairy_tails(
         user_id: str | None,
         session: SessionDep

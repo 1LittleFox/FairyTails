@@ -255,8 +255,9 @@ class MainResponseSchema(BaseModel):
     message2: Optional[str] = None
     collections: list[CollectionPreviewResponseSchema]
 
+# Схема данных для детального просмотра коллекции
 class CollectionDetailsSchema(BaseModel):
-    title_line1: str
+    title: str
     stories: list[StoryPreviewResponseSchema]
 
 # Схема данных для экрана сказки

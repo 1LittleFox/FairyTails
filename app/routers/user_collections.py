@@ -10,7 +10,7 @@ from app.services.conversion_time import seconds_to_hms
 
 router = APIRouter()
 
-@router.get("/collections/{user_id}", response_model=UserCollectionsResponseSchema)
+@router.get("/users/{user_id}/collections", response_model=UserCollectionsResponseSchema)
 async def get_user_collections(
         session: SessionDep,
         user_id: str | None
