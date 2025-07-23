@@ -2,26 +2,25 @@ from fastapi import APIRouter
 
 from sqlmodel import select, desc
 
-from app.schemas import MainResponseSchema, CollectionPreviewResponseSchema, StoryPreviewResponseSchema
+from app.schemas import FairyTailsResponseSchema, CollectionPreviewResponseSchema, StoryPreviewResponseSchema
 from app.database import SessionDep
 from app.models import Collection, Story
 from app.services.conversion_time import seconds_to_hms
 
 router = APIRouter()
 
-@router.get("/home/{user_id}", response_model=MainResponseSchema)
-async def get_home_data(
+@router.get("/fairy_tails/{user_id}", response_model=FairyTailsResponseSchema)
+async def get_all_fairy_tails(
         user_id: str | None,
         session: SessionDep
         #Создать схему для ввода данных
 ):
     if not user_id or user_id in ["null", "undefined", "anonymous"]:
-        return MainResponseSchema(
+        return FairyTailsResponseSchema(
             collections=[],
             stories=[],
-            message1="Здесь будут отображаться прослушенные недавно сказки"
-                     "Сочините первую сказку, начните слушать, и она появится здесь",
-            message2="Сочините вашу первую сказку и сборник создастся автоматически"
+            message1="Сочините вашу первую сказку и сборник создастся автоматически",
+            message2="Вы пока не сочинили ни одной сказки"
         )
 
     stmt_for_collection = select(Collection).where(Collection.user_id==user_id).order_by(desc(Collection.created_at)).limit(5)
@@ -29,7 +28,7 @@ async def get_home_data(
     home_collections = result_collection.scalars().all()
 
     stmt_for_stories = select(Story).where(Story.user_id == user_id).order_by(
-        desc(Story.created_at)).limit(5)
+        desc(Story.created_at))
     result_stories = await session.execute(stmt_for_stories)
     home_stories = result_stories.scalars().all()
 
@@ -53,9 +52,9 @@ async def get_home_data(
     ]
 
 
-    return MainResponseSchema(
+    return FairyTailsResponseSchema(
         stories=recent_stories,
         collections=recent_collections,
-        message1="Недавние",
-        message2="Мои сборники"
+        message2="Все сказки",
+        message1="Мои сборники"
     )

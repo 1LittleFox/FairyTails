@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers import  (home,
                           create_storyteller, questionnaire_options, user_collections,
-                          collections_detail, generation)
+                          collections_detail, generation, all_stories)
 
 app = FastAPI()
 
@@ -25,5 +25,5 @@ app.include_router(home.router)
 # app.include_router(create_storyteller.router)
 app.include_router(questionnaire_options.router)
 app.include_router(user_collections.router)
-app.include_router(collections_detail.router)
+app.include_router(all_stories.router)
 app.include_router(generation.router)

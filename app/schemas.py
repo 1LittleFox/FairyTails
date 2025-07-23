@@ -215,28 +215,15 @@ class OptionsResponse(BaseModel):
     soft_skills: List[str]
     languages: List[str]
 
-# Модели для моков
-class CollectionSchema(BaseModel):
+# Схема вывода данных для Коллекции
+class CollectionResponseSchema(BaseModel):
     title: str
     created_at: datetime
     duration: str
 
-class StoryPreviewSchema(BaseModel):
-    id: UUID4
-    title_line1: str  # Первая строка названия
-    created_at: str
-    duration_min: int
-
-class CollectionsResponseSchema(BaseModel):
-    collections: list[CollectionSchema]
-    stories: list[StoryPreviewSchema]
-
+# Схема вывода всех коллекций пользователя
 class UserCollectionsResponseSchema(BaseModel):
-    collections: list[CollectionSchema]  # Для экрана "Ваши сборники"
-
-class CollectionDetailsSchema(BaseModel):
-    title_line1: str
-    stories: list[StoryPreviewSchema]
+    collections: list[CollectionResponseSchema]  # Для экрана "Ваши сборники"
 
 # Request/Response models
 class UserAccessRequest(BaseModel):
@@ -247,3 +234,34 @@ class StoryGenerationResponse(BaseModel):
     created_at: datetime
     content: str
     url: str
+
+# Схема данных коллекций пользователя для превью
+class CollectionPreviewResponseSchema(BaseModel):
+    id: uuid.UUID
+    title: str
+    url_image: str #на будущее
+
+# Схема данных сказок пользователя для превью
+class StoryPreviewResponseSchema(BaseModel):
+    id: uuid.UUID
+    title: str
+    created_at: datetime
+    duration: str
+
+# Схема данных для экрана "Главная"
+class MainResponseSchema(BaseModel):
+    message1: Optional[str] = None
+    stories: list[StoryPreviewResponseSchema]
+    message2: Optional[str] = None
+    collections: list[CollectionPreviewResponseSchema]
+
+class CollectionDetailsSchema(BaseModel):
+    title_line1: str
+    stories: list[StoryPreviewResponseSchema]
+
+# Схема данных для экрана сказки
+class FairyTailsResponseSchema(BaseModel):
+    message1: Optional[str] = None
+    collections: list[CollectionPreviewResponseSchema]
+    message2: Optional[str] = None
+    stories: list[StoryPreviewResponseSchema]

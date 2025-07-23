@@ -14,5 +14,3 @@ def seconds_to_hms(seconds):
     secs = seconds % 60
 
     return f"{hours:02d}:{minutes:02d}:{secs:02d}"
-
-print(type(seconds_to_hms(952)))
