@@ -288,3 +288,19 @@ class TTSResponseSchema(BaseModel):
     message: str
     audio_url: Optional[str] = None
     filename: Optional[str] = None
+
+class FollowUpQuestionnaire(BaseModel):
+    target_words: List[str] = Field(
+        ...,
+        description="Целевые слова/звуки для включения в сказку"
+    )
+
+    soft_skills: SoftSkillEnum = Field(
+        ...,
+        description="Развиваемые мягкие навыки (не более 3)"
+    )
+
+    story_duration_minutes: conint(ge=1, le=60) = Field(
+        ...,
+        description="Длительность сказки в минутах (не более 60)"
+    )

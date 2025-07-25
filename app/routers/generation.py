@@ -71,7 +71,6 @@ async def generate_tale_and_check_user(
 
                 tale_title = " ".join(tale_text.split()[:2]) + "..."
 
-                print(type(tale_text))
             except Exception as e:
                 raise HTTPException(
                     status_code=500,

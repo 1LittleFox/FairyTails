@@ -4,7 +4,8 @@ from app.schemas import Questionnaire
 def prompt_user_builder(data: Questionnaire) -> str:
     prompt = f"""
         Create a fairy tale to read aloud according to the parameters limited by XML-tags:
-            <article>1. Fairy tale in {data.language.value} language
+            <article>
+            1. Fairy tale in {data.language.value} language
             2. Main character's gender: {data.gender.value}
             3. Child's age: {data.age_years} years and {data.age_months} months
             4. Cultural tradition: {data.ethnography_choice.value}. The tale must incorporate motifs, archetypes, typical characters, metaphors, moral lessons, heroes, metaphors, and plotlines characteristic of this cultural tradition (based on/considering the known corpus of fairy tale texts);

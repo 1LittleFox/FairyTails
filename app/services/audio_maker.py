@@ -13,7 +13,6 @@ class SimpleAudioMaker:
     """Простой класс для создания аудио и загрузки в S3"""
 
     def __init__(self):
-        print("🔧 Инициализация AudioMaker...")
 
         self.openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         self.selectel_domain=os.getenv("SELECTEL_DOMAIN")
@@ -30,11 +29,10 @@ class SimpleAudioMaker:
         )
 
         self.bucket_name = os.getenv("SELECTEL_BUCKET_NAME")
-        print("✅ AudioMaker готов к работе!")
+
 
     async def create_audio(self, text: str) -> bytes:
         """ШАГ 1: Создаем аудио из текста асинхронно"""
-        print(f"🎵 Создаю аудио из текста ({len(text)} символов)...")
 
         response = await self.openai_client.audio.speech.create(
             model="tts-1-hd",  # Модель (можно tts-1-hd для лучшего качества)
@@ -43,13 +41,11 @@ class SimpleAudioMaker:
         )
 
         audio_data = response.content
-        print(f"✅ Аудио создано! Размер: {len(audio_data)} байт")
 
         return audio_data
 
     def upload_to_s3(self, audio_data: bytes) -> str:
         """ШАГ 2: Загружаем аудио в S3"""
-        print(f"📤 Загружаю аудио для пользователя...")
 
         # Преобразуем user_id в строку (для UUID и обычных строк)
 
@@ -70,12 +66,10 @@ class SimpleAudioMaker:
         # Формируем URL (vHosted формат для вашего контейнера)
         file_url = f"{self.selectel_domain}/{filename}"
 
-        print(f"✅ Файл загружен: {file_url}")
         return file_url
 
     async def make_story_audio(self, story_text: str) -> str:
         """ГЛАВНАЯ ФУНКЦИЯ: Текст → Аудио → S3 → URL"""
-        print(f"🚀 Начинаю обработку истории для пользователя")
 
         try:
             # Шаг 1: Текст → Аудио (теперь асинхронно)
@@ -84,9 +78,7 @@ class SimpleAudioMaker:
             # Шаг 2: Аудио → S3
             audio_url = self.upload_to_s3(audio_data)
 
-            print(f"🎉 Успех! Ваша ссылка: {audio_url}")
             return audio_url
 
         except Exception as e:
-            print(f"❌ Ошибка: {e}")
             raise Exception(f"Не удалось создать аудио: {e}")
