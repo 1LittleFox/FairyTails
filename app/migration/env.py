@@ -1,16 +1,15 @@
 import asyncio
 import os
 import sys
-from pathlib import Path
 from logging.config import fileConfig
+from pathlib import Path
 
+from alembic import context
+from dotenv import load_dotenv
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
-from alembic import context
 from sqlmodel import SQLModel
-from dotenv import load_dotenv
-
 
 project_root = Path(__file__).resolve().parents[1]  # Go up one level from alembic/env.py
 sys.path.insert(0, str(project_root))

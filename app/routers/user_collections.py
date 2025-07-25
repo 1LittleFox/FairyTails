@@ -2,9 +2,9 @@ from datetime import datetime
 
 from fastapi import APIRouter
 from sqlmodel import select, desc
-from app.models import Collection
 
 from app.database import SessionDep
+from app.models import Collection
 from app.schemas import UserCollectionsResponseSchema, CollectionResponseSchema
 from app.services.conversion_time import seconds_to_hms
 

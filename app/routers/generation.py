@@ -10,12 +10,15 @@ from app.database import SessionDep
 from app.models import User, Collection, Story
 from app.schemas import Questionnaire, StoryGenerationResponse, UserAccessRequest
 from app.services.prompt_builder import prompt_system_builder, prompt_user_builder
+from app.services.audio_maker import SimpleAudioMaker
 
 load_dotenv()
 router = APIRouter()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = "gpt-4-turbo"
+
+audio_maker = SimpleAudioMaker()
 
 @router.post("/generation-tale", response_model=StoryGenerationResponse)
 async def generate_tale_and_check_user(
@@ -68,13 +71,23 @@ async def generate_tale_and_check_user(
 
                 tale_title = " ".join(tale_text.split()[:2]) + "..."
 
+                print(type(tale_text))
             except Exception as e:
                 raise HTTPException(
                     status_code=500,
                     detail=f"Ошибка генерации сказки: {str(e)}"
                 )
 
-            # TODO: подключение к TTS и озвучка сказки
+            try:
+
+                audio_url = await audio_maker.make_story_audio(tale_text)
+
+            except Exception as e:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Ошибка озвучивания сказки: {str(e)}"
+                )
+
 
             new_collection = Collection(
                 user_id=user_id,
@@ -90,7 +103,7 @@ async def generate_tale_and_check_user(
                 collection_id=new_collection.id,
                 title=tale_title,
                 content_story=tale_text,
-                audio_url="Заглушка для аудио URL",
+                audio_url=audio_url,
                 duration_seconds=data.story_duration_minutes*60,
                 age_in_months=data.age_years*12 + data.age_months,
                 ethnography=data.ethnography_choice,

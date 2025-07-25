@@ -1,9 +1,3 @@
-import uuid
-from datetime import date, timedelta
-from app.schemas import CollectionResponseSchema, UserCollectionsResponseSchema, \
-    CollectionDetailsSchema
-
-
 def format_duration(minutes: int) -> str:
     """Форматирует продолжительность в человекочитаемый вид"""
     if minutes < 60:

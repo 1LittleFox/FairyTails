@@ -1,11 +1,12 @@
-from pathlib import Path
+import os
 import uuid
+from pathlib import Path
+
 import aiofiles
+from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException, Body
 from fastapi.responses import FileResponse
 from openai import AsyncOpenAI
-from dotenv import load_dotenv
-import os
 
 load_dotenv()
 

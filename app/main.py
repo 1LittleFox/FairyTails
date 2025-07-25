@@ -2,9 +2,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import  (home,
-                          create_storyteller, questionnaire_options, user_collections,
-                          collections_detail, generation, all_stories)
+from app.routers import (home,
+                         questionnaire_options, user_collections,
+                         collections_detail, generation, all_stories)
 
 app = FastAPI()
 

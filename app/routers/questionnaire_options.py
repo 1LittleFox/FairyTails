@@ -1,5 +1,4 @@
 from fastapi import APIRouter
-from app.schemas import OptionsResponse
 
 router = APIRouter()
 

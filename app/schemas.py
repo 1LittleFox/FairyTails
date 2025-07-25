@@ -1,11 +1,12 @@
 # schemas.py
 import re
 import uuid
+from datetime import datetime
 from enum import Enum
-from datetime import datetime, date
-from typing import List, Optional, Dict, Union
-from pydantic import BaseModel, Field, conint, validator, UUID4
+from typing import List, Optional, Dict, Union, Literal
 from uuid import uuid4
+
+from pydantic import BaseModel, Field, conint, validator
 
 
 class GenderEnum(str, Enum):
@@ -266,3 +267,24 @@ class FairyTailsResponseSchema(BaseModel):
     collections: list[CollectionPreviewResponseSchema]
     message2: Optional[str] = None
     stories: list[StoryPreviewResponseSchema]
+
+class TTSRequestSchema(BaseModel):
+    text: str = Field(..., max_length=4000, description="Текст для озвучивания")
+    voice: Literal["alloy", "echo", "fable", "onyx", "nova", "shimmer"] = Field(
+        default="nova",
+        description="Голос для озвучивания"
+    )
+    model: Literal["tts-1", "tts-1-hd"] = Field(
+        default="tts-1",
+        description="Модель TTS (HD качество дороже)"
+    )
+    response_format: Literal["mp3", "opus", "aac", "flac"] = Field(
+        default="mp3",
+        description="Формат аудио файла"
+    )
+
+class TTSResponseSchema(BaseModel):
+    success: bool
+    message: str
+    audio_url: Optional[str] = None
+    filename: Optional[str] = None

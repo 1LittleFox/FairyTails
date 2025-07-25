@@ -1,12 +1,14 @@
 import uuid
-from typing import Optional, List
 from datetime import datetime, UTC
+from typing import Optional, List
 
-from sqlalchemy import TIMESTAMP
-from sqlmodel import Field, SQLModel, Enum, Relationship
 from sqlalchemy import Column, Text
+from sqlalchemy import TIMESTAMP
 from sqlalchemy.types import JSON
+from sqlmodel import Field, SQLModel, Enum, Relationship
+
 from app.schemas import EthnographyEnum, LanguageEnum, GenderEnum
+
 
 class Base(SQLModel):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True, nullable=False)
