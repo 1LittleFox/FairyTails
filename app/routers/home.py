@@ -23,12 +23,13 @@ async def get_home_data(
             message2="Сочините вашу первую сказку и сборник создастся автоматически"
         )
 
-    stmt_for_collection = select(Collection).where(Collection.user_id==user_id).order_by(desc(Collection.created_at)).limit(5)
+    stmt_for_collection = select(Collection).where(Collection.user_id==user_id).order_by(
+        desc(Collection.created_at))
     result_collection = await session.execute(stmt_for_collection)
     home_collections = result_collection.scalars().all()
 
     stmt_for_stories = select(Story).where(Story.user_id == user_id).order_by(
-        desc(Story.created_at)).limit(5)
+        desc(Story.created_at))
     result_stories = await session.execute(stmt_for_stories)
     home_stories = result_stories.scalars().all()
 
