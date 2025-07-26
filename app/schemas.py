@@ -304,3 +304,9 @@ class FollowUpQuestionnaire(BaseModel):
         ...,
         description="Длительность сказки в минутах (не более 60)"
     )
+
+class AudioStoryResponse(BaseModel):
+    id: uuid.UUID
+    title: str
+    audio_url: str
+    text_content: str
