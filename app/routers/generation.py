@@ -9,7 +9,7 @@ from sqlmodel import select
 from app.database import SessionDep
 from app.models import User, Collection, Story
 from app.schemas import Questionnaire, StoryGenerationResponse, UserAccessRequest
-from app.services.prompt_builder import prompt_system_builder, prompt_user_builder
+from app.services.prompt_builder import prompt_user_builder
 from app.services.audio_maker import SimpleAudioMaker
 
 load_dotenv()
@@ -46,15 +46,14 @@ async def generate_tale_and_check_user(
             try:
                 client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
-                system = prompt_system_builder()
                 prompt = prompt_user_builder(data)
 
                 response = await client.chat.completions.create(
                     model=OPENAI_MODEL,
                     response_format={"type": "json_object"},
                     messages=[
-                        {"role": "system", "content": f"{system}. Всегда возвращай ответ в формате JSON."},
-                        {"role": "user", "content": f"{prompt}\n\nВерни ответ в формате JSON с полями: 'tale' (текст сказки), "
+                        {"role": "system", "content": f"{prompt["system"]}. Всегда возвращай ответ в формате JSON."},
+                        {"role": "user", "content": f"{prompt["user"]}\n\nВерни ответ в формате JSON с полями: 'tale' (текст сказки), "
                                                     f"'word_count' (количество слов), 'target_words_usage' (словарь использования целевых слов)."}
                     ],
                     temperature=0.3,
@@ -102,8 +101,8 @@ async def generate_tale_and_check_user(
                 collection_id=new_collection.id,
                 title=tale_title,
                 content_story=tale_text,
-                audio_url=audio_url,
-                duration_seconds=data.story_duration_minutes*60,
+                audio_url=audio_url["url"],
+                duration_seconds=audio_url["duration"],
                 age_in_months=data.age_years*12 + data.age_months,
                 ethnography=data.ethnography_choice,
                 language=data.language,

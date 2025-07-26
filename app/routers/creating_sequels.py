@@ -8,14 +8,10 @@ from openai import AsyncOpenAI
 from sqlmodel import select
 
 from app.database import SessionDep
-from app.services.prompt_builder import prompt_system_builder
 from app.services.audio_maker import SimpleAudioMaker
 from app.services.prompt_continue import prompt_continue_builder
 from app.schemas import FollowUpQuestionnaire, StoryGenerationResponse
 from app.models import Story, User
-
-
-
 
 
 load_dotenv()
@@ -42,8 +38,6 @@ async def make_continue_for_story(
 
         try:
             client = AsyncOpenAI(api_key=OPENAI_API_KEY)
-
-            system = prompt_system_builder()
 
             stmt = select(Story).where(Story.id == story_id)
             result = await session.execute(stmt)
@@ -74,10 +68,9 @@ async def make_continue_for_story(
                 model=OPENAI_MODEL,
                 response_format={"type": "json_object"},
                 messages=[
-                    {"role": "system", "content": f"{system}. Всегда возвращай ответ в формате JSON."},
+                    {"role": "system", "content": prompt_for_continuation["system"]},
                     {"role": "user",
-                     "content": f"{prompt_for_continuation}\n\nВерни ответ в формате JSON с полями: 'tale' (текст сказки), "
-                                f"'word_count' (количество слов), 'target_words_usage' (словарь использования целевых слов)."}
+                     "content": prompt_for_continuation["user"]}
                 ],
                 temperature=0.3,
                 max_tokens=3500,

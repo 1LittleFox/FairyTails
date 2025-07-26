@@ -1,52 +1,144 @@
 # prompt_builder.py
 from app.schemas import Questionnaire
 
-def prompt_user_builder(data: Questionnaire) -> str:
-    prompt = f"""
-        Create a fairy tale to read aloud according to the parameters limited by XML-tags:
-            <article>
-            1. Fairy tale in {data.language.value} language
-            2. Main character's gender: {data.gender.value}
-            3. Child's age: {data.age_years} years and {data.age_months} months
-            4. Cultural tradition: {data.ethnography_choice.value}. The tale must incorporate motifs, archetypes, typical characters, metaphors, moral lessons, heroes, metaphors, and plotlines characteristic of this cultural tradition (based on/considering the known corpus of fairy tale texts);
-            5. The fairy tale must be in the range from {data.story_duration_minutes*120 - data.story_duration_minutes*120*0.05} to {data.story_duration_minutes*120 + data.story_duration_minutes*120*1.05} characters.
-            6. Be sure to include the child's interests listed below: {", ".join(data.subcategories)}
-            7. List of words and expressions to memorize: {", ".join(data.target_words)}. These words and expressions must be seamlessly integrated into the tale text. Use each given word at least 2 times in different contexts..
-            8. Target soft skills: {data.soft_skills.value}. The tale should foster the development of the specified soft skills through plot situations, dialogues, and character actions.
-            9. Exclude anxiety-inducing or frightening scenes (considering the specified age), including loss, loneliness, illness, injury, conflicts, destruction, etc.
-            10. The tale structure must include (in order of narration):
-                1) Exposition, which should include a minimum of {data.story_duration_minutes*120*0.1} characters ;
-                2) Inciting Incident, which should include a minimum of {data.story_duration_minutes*120*0.25} characters;
-                3) Rising Action, which should include a minimum of {data.story_duration_minutes*120*0.40} characters;
-                4) Climax, which should include a minimum of {data.story_duration_minutes*120*0.2} characters;
-                5) Resolution, which should include a minimum of {data.story_duration_minutes*120*0.05} characters.</article>
-            11. Dialogues should occupy 30-40% of text
-            """
-    return prompt
+# original_russian_prompt_divided.py
+from app.schemas import Questionnaire
 
-def prompt_system_builder() -> str:
+# Расширенная таблица соответствия длительности и количества слов
+DURATION_TO_WORDS = {
+    5: {"min": 600, "max": 690},
+    6: {"min": 720, "max": 828},
+    7: {"min": 840, "max": 966},
+    8: {"min": 960, "max": 1104},
+    9: {"min": 1080, "max": 1242},
+    10: {"min": 1200, "max": 1380},
+    11: {"min": 1320, "max": 1518},
+    12: {"min": 1440, "max": 1656},
+    13: {"min": 1560, "max": 1794},
+    14: {"min": 1680, "max": 1932},
+    15: {"min": 1800, "max": 2070},
+    16: {"min": 1920, "max": 2208},
+    17: {"min": 2040, "max": 2346},
+    18: {"min": 2160, "max": 2484},
+    19: {"min": 2280, "max": 2622},
+    20: {"min": 2400, "max": 2760},
+    21: {"min": 2520, "max": 2898},
+    22: {"min": 2640, "max": 3036},
+    23: {"min": 2760, "max": 3174},
+    24: {"min": 2880, "max": 3312},
+    25: {"min": 3000, "max": 3450},
+    26: {"min": 3120, "max": 3588},
+    27: {"min": 3240, "max": 3726},
+    28: {"min": 3360, "max": 3864},
+    29: {"min": 3480, "max": 4002},
+    30: {"min": 3600, "max": 4140},
+    31: {"min": 3720, "max": 4278},
+    32: {"min": 3840, "max": 4416},
+    33: {"min": 3960, "max": 4554},
+    34: {"min": 4080, "max": 4692},
+    35: {"min": 4200, "max": 4830},
+    36: {"min": 4320, "max": 4968},
+    37: {"min": 4440, "max": 5106},
+    38: {"min": 4560, "max": 5244},
+    39: {"min": 4680, "max": 5382},
+    40: {"min": 4800, "max": 5520},
+    41: {"min": 4920, "max": 5658},
+    42: {"min": 5040, "max": 5796},
+    43: {"min": 5160, "max": 5934},
+    44: {"min": 5280, "max": 6072},
+    45: {"min": 5400, "max": 6210},
+    46: {"min": 5520, "max": 6348},
+    47: {"min": 5640, "max": 6486},
+    48: {"min": 5760, "max": 6624},
+    49: {"min": 5880, "max": 6762},
+    50: {"min": 6000, "max": 6900},
+    51: {"min": 6120, "max": 7038},
+    52: {"min": 6240, "max": 7176},
+    53: {"min": 6360, "max": 7314},
+    54: {"min": 6480, "max": 7452},
+    55: {"min": 6600, "max": 7590},
+    56: {"min": 6720, "max": 7728},
+    57: {"min": 6840, "max": 7866},
+    58: {"min": 6960, "max": 8004},
+    59: {"min": 7080, "max": 8142},
+    60: {"min": 7200, "max": 8280},
+}
 
-    system  = f"""
-        You are a storyteller who creates educational fairy tales for children, taking into account cultural traditions and pedagogical goals.
-        
-        Additional Conditions:
-        - Narration must be in the third person.
-        - Use expressive imagery, rhythm, and repetition to make the tale pleasant to read aloud with intonation.
-        - Overall style of the tale – warm, friendly, slightly magical. Use light humor if age-appropriate and fitting for the cultural tradition.
-        - The tale must be logical, self-contained, but open to continuation (the hero can return in a future story).
-        - The theme, plot, and moral of the tale must be focused on developing the chosen soft skills.
-        - Integrate the specified words and expressions into appropriate contexts. If necessary, explain their meaning organically through character dialogues.
-        - Use a figurative, friendly style. Language must be suitable for a child of the chosen age. Avoid slang or overly complex constructions.
-        - Strictly exclude: violence, scenes of sadness, depression, eroticism, dangers, and any content not conforming to the **G (General Audience)** rating per the MPAA system.
-        - Consider the specifics of the cultural tradition, its stylistics, morals, plot devices, and symbolism.
-        - At the end of the tale – include a brief moral (conclusion) and a gentle hint of continuation. Do not highlight the moral and conclusion separately; it should be a continuation of the tale narrative, not a separate section with its own heading.
-        - The tale text must be a single block of text, without separate paragraphs or any icons – only plain text.
-        - When composing the tale, use information from authoritative, verified, preferably scientific and peer-reviewed sources regarding the vocabulary size of a child of the specified age, considering the chosen language, and additionally incorporating the words specified for memorization.
-        - Exclude from the tale text any mentions of religion and religious figures in any form, or mentions of clergy.
+def prompt_user_builder(data: Questionnaire) -> dict:
+    word_range = DURATION_TO_WORDS.get(
+        data.story_duration_minutes,
+        {"min": data.story_duration_minutes * 120, "max": data.story_duration_minutes * 138}
+    )
 
-        Write the tale in a way that it can be voiced with warmth and intonation.
+    # Форматируем возраст
+    age_text = f"{data.age_years} лет"
+    if data.age_months > 0:
+        age_text += f" {data.age_months} месяцев"
 
-        The tale should be a safe, imaginative, magical story that develops the child's soft skills and vocabulary. It should account for interests, age, and cultural context, be written in the spirit of the fairy tale tradition, and sound as if read aloud with warmth.
-    """
+    system_message = """Ты — сказочник, создающий развивающие сказки для детей, с учётом культурных традиций и педагогических целей.
 
-    return system
+    **ТВОЯ РОЛЬ И ЭКСПЕРТИЗА:**
+    - Специалист по детскому развитию и возрастному контенту
+    - Знаток мировых культурных традиций сказок
+    - Эксперт по развитию словарного запаса через повествование
+    - Педагог по развитию софт-скиллов через действия персонажей
+    - Создатель безопасного, увлекательного контента без пугающих элементов
+
+    **ОБЯЗАТЕЛЬНАЯ СТРУКТУРА СКАЗКИ:**
+    Экспозиция (10-15%) → Завязка (5-10%) → Развитие (50-70%) → Кульминация (10-15%) → Развязка (5-10%)
+
+    **КЛЮЧЕВЫЕ ПРИНЦИПЫ:**
+    - Повествование от третьего лица
+    - Исключи тревожные или пугающие сцены (потеря, одиночество, болезнь, увечье, конфликты, разрушения)
+    - Никаких религиозных упоминаний
+    - Возрастной словарь с естественными пояснениями незнакомых слов
+    - Ритмичный, выразительный язык для чтения вслух
+    - Тёплый, поддерживающий, слегка волшебный тон
+    - Показывай навыки через действия, а не прямые заявления
+    - "Безопасная симуляция" — ошибки как возможности для обучения
+    - Финал с мягким приглашением к размышлению
+
+    **КОНТРОЛЬ КАЧЕСТВА:**
+    - Каждое целевое слово используется минимум 2 раза в разных контекстах
+    - Софт-скиллы демонстрируются через решающие действия в кульминации
+    - Логичный переход между этапами сюжета
+    - Действия героев соответствуют их мотивации и росту
+    - Аутентичное представление культурной традиции
+    - Содержание категории G (для всех возрастов)
+
+    **ЗАПРЕТЫ:**
+    - Строго запрещено использовать служебные обозначения этапов сюжета в финальном тексте
+    - Не упоминай целевые софт-скиллы в явном виде
+    - Не вставляй заголовки, списки или маркировки частей сюжета
+    - Не используй механические определения или словари"""
+
+    user_message = f"""Сочини сказку для вслухового чтения по следующим параметрам:
+
+    **ПАРАМЕТРЫ СКАЗКИ:**
+    - Язык: {data.language.value}
+    - Пол главного героя: {data.gender.value}
+    - Возраст ребёнка: {age_text}
+    - Культурная традиция: {data.ethnography_choice.value} (учитывай мотивы, архетипы, персонажей, метафоры и моральные уроки традиции)
+    - Длительность: {data.story_duration_minutes} минут (от {word_range['min']} до {word_range['max']} слов)
+    - Интересы ребёнка: {", ".join(data.subcategories)}
+    - Слова для запоминания: {", ".join(data.target_words)} (встрой органично в текст, используй минимум 2 раза каждое, поясняй незнакомые через действия или диалоги)
+    - Целевые софт-скиллы: {data.soft_skills.value} (развивай через сюжетные ситуации, диалоги и действия персонажей)
+
+    **ДЕТАЛИЗАЦИЯ СТРУКТУРЫ:**
+
+    Экспозиция — начало сказки с базовыми сведениями о мире истории: где, когда, кто главный герой, его обстоятельства, черты характера, обстановка. Создай "почву" для читателя, задай тон и атмосферу. Ответь на вопросы: кто? где? когда? Введи ключевых героев, намекни на их качества. Используй яркие описания мира, короткие бытовые сцены. Не перегружай фактами — создай живой мир и оставь интерес.
+
+    Завязка — момент появления события, запускающего изменения. "Первый толчок" к действию, причина изменения спокойного мира. Чёткий переход от спокойствия к действию, первый конфликт или вызов. Сформулируй главные вопросы истории: удастся ли герою справиться? Какая цель перед ним? Покажи, что герой должен действовать иначе.
+
+    Развитие — самая большая часть. Серия событий, показывающих ответ героя на вызов: пробует пути, ошибается, учится, взаимодействует с персонажами, сталкивается с трудностями, продвигается к цели. Углубляй характеры, показывай изменения героев. Создай динамику с нарастающим напряжением. Действия героя должны логично вытекать из характера.
+
+    Кульминация — вершина напряжения. Наибольший вызов, критическая ситуация, сильнейший противник. Здесь решается, сможет ли герой преодолеть препятствие и достичь цели. Раскрой главную интригу. Герой использует всё изученное или делает выбор, показывающий рост. Ключевой софтскилл проверяется в действии.
+
+    Развязка — финал, показывающий изменения после кульминации. Судьбы героев понятны, конфликт исчерпан. Ответь на вопросы: что стало с героем? Чему научился? Что с миром? Сделай ясной, светлой и доброй. Содержи скрытый вопрос — приглашение применить опыт в жизни.
+
+    Создай цельную художественную историю, которая звучит естественно при чтении вслух с теплотой и выражением. Сказка должна быть волшебной и увлекательной, тонко развивая целевые софт-скиллы и словарный запас."""
+
+    return {
+        "system": system_message,
+        "user": user_message
+    }

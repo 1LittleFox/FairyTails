@@ -1,10 +1,12 @@
 import os
 import uuid
+import io
 from datetime import datetime
 
 import boto3
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
+from mutagen.mp3 import MP3
 
 load_dotenv()
 
@@ -31,7 +33,7 @@ class SimpleAudioMaker:
         self.bucket_name = os.getenv("SELECTEL_BUCKET_NAME")
 
 
-    async def create_audio(self, text: str) -> bytes:
+    async def create_audio(self, text: str) -> tuple[bytes, float]:
         """ШАГ 1: Создаем аудио из текста асинхронно"""
 
         response = await self.openai_client.audio.speech.create(
@@ -42,7 +44,16 @@ class SimpleAudioMaker:
 
         audio_data = response.content
 
-        return audio_data
+        # Получаем длительность аудио
+        try:
+            audio_file = io.BytesIO(audio_data)
+            audio = MP3(audio_file)
+            duration = audio.info.length  # в секундах
+        except Exception as e:
+            print(f"Не удалось получить длительность аудио: {e}")
+            duration = 0.0
+
+        return audio_data, duration
 
     def upload_to_s3(self, audio_data: bytes) -> str:
         """ШАГ 2: Загружаем аудио в S3"""
@@ -68,17 +79,20 @@ class SimpleAudioMaker:
 
         return file_url
 
-    async def make_story_audio(self, story_text: str) -> str:
+    async def make_story_audio(self, story_text: str) -> dict:
         """ГЛАВНАЯ ФУНКЦИЯ: Текст → Аудио → S3 → URL"""
 
         try:
             # Шаг 1: Текст → Аудио (теперь асинхронно)
-            audio_data = await self.create_audio(story_text)
+            audio_data, duration = await self.create_audio(story_text)
 
             # Шаг 2: Аудио → S3
             audio_url = self.upload_to_s3(audio_data)
 
-            return audio_url
+            return {
+                'url': audio_url,
+                'duration': duration  # длительность в секундах
+            }
 
         except Exception as e:
             raise Exception(f"Не удалось создать аудио: {e}")

@@ -135,3 +135,27 @@ async def get_options():
         ],
         "languages": ["русском", "английском", "французском"]
     }
+
+translations = {
+        "ru": {
+            "compose_new_tale": "Сочинить новую сказку:",
+            "recent": "Недавние",
+            "my_collections": "Мои сборники",
+            "all": "Все",
+            "minutes": "минут"
+        },
+        "en": {
+            "compose_new_tale": "Compose a new fairy tale:",
+            "recent": "Recent",
+            "my_collections": "My Collections",
+            "all": "All",
+            "minutes": "minutes"
+        },
+        "fr": {
+            "compose_new_tale": "Composer un nouveau conte:",
+            "recent": "Récents",
+            "my_collections": "Mes Collections",
+            "all": "Tout",
+            "minutes": "minutes"
+        }
+    }
