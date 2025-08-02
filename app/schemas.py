@@ -47,12 +47,6 @@ class SoftSkillEnum(str, Enum):
     FLEXIBILITY = "Гибкость"
     ETIQUETTE = "Этикет"
 
-
-class SubscriptionStatus(str, Enum):
-    ACTIVE = "active"
-    INACTIVE = "inactive"
-
-
 class EthnographyEnum(str, Enum):
     GERMAN = "Германские"
     SLAVIC = "Славянские"
@@ -70,7 +64,6 @@ class EthnographyEnum(str, Enum):
     JAPANESE = "Японские"
     JEWISH = "Еврейские"
 
-
 class LanguageEnum(str, Enum):
     RUSSIAN = "русском"
     ENGLISH = "английском"
@@ -80,7 +73,7 @@ class Questionnaire(BaseModel):
     age_years: conint(ge=0, le=99) = Field(..., description="Возраст в полных годах")
     age_months: conint(ge=0, le=11) = Field(..., description="Месяцы")
 
-    interest_category: InterestCategory = Field(
+    interest_category: List[str] = Field(
         ...,
         description="Категории интересов ребёнка"
     )
@@ -100,22 +93,22 @@ class Questionnaire(BaseModel):
         description="Длительность сказки в минутах (не более 60)"
     )
 
-    soft_skills: SoftSkillEnum = Field(
+    soft_skills: List[str] = Field(
         ...,
         description="Развиваемые мягкие навыки (не более 3)"
     )
 
-    ethnography_choice: EthnographyEnum = Field(
+    ethnography_choice: str = Field(
         ...,
         description="Этнографическая характеристика сказки"
     )
 
-    language: LanguageEnum = Field(
-        default=LanguageEnum.ENGLISH,
+    language: str = Field(
+        default="english",
         description="Язык сказки"
     )
 
-    gender: GenderEnum = Field(
+    gender: str = Field(
         ...,
         description="Пол ребёнка"
     )

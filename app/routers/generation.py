@@ -89,7 +89,8 @@ async def generate_tale_and_check_user(
 
             new_collection = Collection(
                 user_id=user_id,
-                title=f"Stories about {tale_title}"
+                title=f"Stories about {tale_title}",
+                total_Listening_time=audio_url["duration"]
             )
 
             session.add(new_collection)
