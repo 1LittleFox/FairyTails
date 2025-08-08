@@ -8,7 +8,7 @@ from app.services.conversion_time import seconds_to_hms
 
 router = APIRouter()
 
-@router.get("/users/{user_id}/homes", response_model=MainResponseSchema)
+@router.get("/users/{user_id}/home", response_model=MainResponseSchema)
 async def get_home_data(
         user_id: str | None,
         session: SessionDep,
