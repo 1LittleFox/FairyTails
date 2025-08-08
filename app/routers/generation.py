@@ -99,8 +99,6 @@ async def generate_tale_and_check_user(
 
                 markup_tale_text = markup_tale_data['markup_tale']
 
-
-
             except Exception as e:
                 raise HTTPException(
                     status_code=500,
@@ -132,7 +130,7 @@ async def generate_tale_and_check_user(
                 user_id=user_id,
                 collection_id=new_collection.id,
                 title=tale_title,
-                content_story=markup_tale_text,
+                content_story=tale_text,
                 audio_url=audio_url["url"],
                 duration_seconds=audio_url["duration"],
                 age_in_months=data.age_years*12 + data.age_months,
