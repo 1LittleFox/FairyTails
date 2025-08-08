@@ -1,12 +1,18 @@
 # main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.i18n_config import setup_i18n
 
 from app.routers import (home,
                          questionnaire_options, user_collections, get_transletions,
                          collections_detail, generation, creating_sequels, display_stories)
 
 app = FastAPI()
+
+@app.on_event("startup")
+async def startup_event():
+    setup_i18n()
+
 
 origins = [
     "http://127.0.0.1:8000",

@@ -7,7 +7,7 @@ from sqlalchemy import TIMESTAMP
 from sqlalchemy.types import JSON
 from sqlmodel import Field, SQLModel, Enum, Relationship
 
-from app.schemas import EthnographyEnum, LanguageEnum, GenderEnum
+from app.schemas import LanguageEnum, GenderEnum
 
 
 class Base(SQLModel):
@@ -48,8 +48,7 @@ class Story(Base, table=True):
 
     #Поля анкеты которые нужны для продолжения
     age_in_months: int = Field(nullable=False) #Для расчета нового возраста
-    ethnography: EthnographyEnum = Field(default=EthnographyEnum.ENGLISH_AND_IRISH,
-                                         sa_column=Column(Enum(EthnographyEnum, name="ethnography_enum")))
+    ethnography: str = Field(default="Английские и Ирландские")
     language: LanguageEnum = Field(default=LanguageEnum.ENGLISH,
                                          sa_column=Column(Enum(LanguageEnum, name="language_enum")))
     gender: GenderEnum = Field(default=GenderEnum.UNIVERSAL,

@@ -75,6 +75,12 @@ def prompt_user_builder(data: Questionnaire) -> dict:
     if data.age_months > 0:
         age_text += f" {data.age_months} месяцев"
 
+    # Форматируем гендер
+    gender = {"M": "boy", "F": "girl"}.get(data.gender, "any gender")
+
+    # Форматируем язык
+    language = {"РУС": "Russian", "ENG": "English", "FRA": "French"}.get(data.language)
+
     system_message = """Ты — сказочник, создающий развивающие сказки для детей, с учётом культурных традиций и педагогических целей.
 
     **ТВОЯ РОЛЬ И ЭКСПЕРТИЗА:**
@@ -115,8 +121,8 @@ def prompt_user_builder(data: Questionnaire) -> dict:
     user_message = f"""Сочини сказку для вслухового чтения по следующим параметрам:
 
     **ПАРАМЕТРЫ СКАЗКИ:**
-    - Язык: {data.language}
-    - Пол главного героя: {data.gender}
+    - Язык: {language}
+    - Пол главного героя: {gender}
     - Возраст ребёнка: {age_text}
     - Культурная традиция: {data.ethnography_choice} (учитывай мотивы, архетипы, персонажей, метафоры и моральные уроки традиции)
     - Длительность: {data.story_duration_minutes} минут (от {word_range['min']} до {word_range['max']} слов)

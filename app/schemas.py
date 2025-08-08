@@ -10,9 +10,9 @@ from pydantic import BaseModel, Field, conint, validator
 
 
 class GenderEnum(str, Enum):
-    BOY = "Мальчик"
-    GIRL = "Девочка"
-    UNIVERSAL = "Универсальный герой"
+    BOY = "M"
+    GIRL = "F"
+    UNIVERSAL = "U"
 
 class InterestCategory(str, Enum):
     ANIMALS = "Животные"
@@ -65,9 +65,9 @@ class EthnographyEnum(str, Enum):
     JEWISH = "Еврейские"
 
 class LanguageEnum(str, Enum):
-    RUSSIAN = "русском"
-    ENGLISH = "английском"
-    FRENCH = "французском"
+    RUSSIAN = "РУС"
+    ENGLISH = "ENG"
+    FRENCH = "FRA"
 
 class Questionnaire(BaseModel):
     age_years: conint(ge=0, le=99) = Field(..., description="Возраст в полных годах")
@@ -103,12 +103,12 @@ class Questionnaire(BaseModel):
         description="Этнографическая характеристика сказки"
     )
 
-    language: str = Field(
-        default="english",
+    language: LanguageEnum = Field(
+        ...,
         description="Язык сказки"
     )
 
-    gender: str = Field(
+    gender: GenderEnum = Field(
         ...,
         description="Пол ребёнка"
     )
@@ -244,10 +244,15 @@ class StoryPreviewResponseSchema(BaseModel):
 
 # Схема данных для экрана "Главная"
 class MainResponseSchema(BaseModel):
-    message1: Optional[str] = None
+    compose_new_tale_text: str  # "Сочинить новую сказку:"
+    recent_label: str  # "Недавние"
+    my_collections_label: str  # "Мои сборники"
+    all_label: str  # "Все" (для кнопки показать все коллекции)
     stories: list[StoryPreviewResponseSchema]
-    message2: Optional[str] = None
     collections: list[CollectionPreviewResponseSchema]
+    # Сообщения для пустых состояний
+    empty_message_recent: Optional[str] = None
+    empty_message_collections: Optional[str] = None
 
 # Схема данных для детального просмотра коллекции
 class CollectionDetailsSchema(BaseModel):

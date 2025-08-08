@@ -1,4 +1,3 @@
-from app.localization.translations import TRANSLATIONS
 from app.localization.constants import DEFAULT_LANGUAGE
 
 def get_translation(locale: str, fallback_locale: str = DEFAULT_LANGUAGE):
