@@ -1,0 +1,137 @@
+{
+  "ethnography": {
+    "germanic": {
+      "name": "Germaniques",
+      "description": "sous-texte moral, punition de la stupidité/cruauté, magie, animaux parlants."
+    },
+    "slavic": {
+      "name": "Slaves",
+      "description": "motifs héroïques, la nature comme personnage, assistants magiques."
+    },
+    "caucasian": {
+      "name": "Caucasiennes",
+      "description": "courage, honneur, ruse, hospitalité, lutte contre le destin et les éléments."
+    },
+    "turkic": {
+      "name": "Turques",
+      "description": "couleur orientale, sagesse des derviches, humour, importance de la parole."
+    },
+    "french": {
+      "name": "Françaises",
+      "description": "miracles, transformations magiques, fées, leçons importantes pour les enfants."
+    },
+    "scandinavian": {
+      "name": "Scandinaves",
+      "description": "trolls, géants, la nature comme personnage, dureté du monde, justice."
+    },
+    "english_irish": {
+      "name": "Anglaises et Irlandaises",
+      "description": "fées, esprits forestiers, terres magiques, dilemmes moraux."
+    },
+    "italian": {
+      "name": "Italiennes",
+      "description": "prudence, punition du mensonge/avidité, miracles."
+    },
+    "spanish_portuguese": {
+      "name": "Espagnoles et Portugaises",
+      "description": "mélange d'influence arabe et européenne, contes romantiques et domestiques."
+    },
+    "greek": {
+      "name": "Grecques",
+      "description": "intrigues mythologiques et folkloriques."
+    },
+    "persian": {
+      "name": "Persanes",
+      "description": "sagesse, destin, justice, paraboles."
+    },
+    "indian": {
+      "name": "Indiennes",
+      "description": "karma, responsabilité, réincarnations, animaux sages."
+    },
+    "chinese": {
+      "name": "Chinoises",
+      "description": "respect des aînés, forces naturelles, ironie, morale, fondements du tao et du confucianisme."
+    },
+    "japanese": {
+      "name": "Japonaises",
+      "description": "esprits magiques, relation avec la nature, honneur, gratitude."
+    },
+    "jewish": {
+      "name": "Juives",
+      "description": "sagesse, ironie, destin et épreuves, choix éthique, logique domestique, humour, éthique, valeurs familiales."
+    }
+  },
+  "genders": {
+    "boy": "Garçon",
+    "girl": "Fille",
+    "universal": "Héros universel"
+  },
+  "interests": {
+    "categories": {
+      "animals": "Animaux",
+      "transport": "Transport",
+      "magic": "Magie",
+      "princesses": "Princesses",
+      "superheroes": "Super-héros",
+      "astronauts": "Astronautes",
+      "mythical_creatures": "Créatures mythiques",
+      "ordinary_people": "Enfants/adultes ordinaires",
+      "other": "Autre"
+    },
+    "subcategories": {
+      "cats": "Chats",
+      "dogs": "Chiens",
+      "dinosaurs": "Dinosaures",
+      "forest_animals": "Animaux de la forêt",
+      "cars": "Voitures",
+      "trains": "Trains",
+      "planes": "Avions",
+      "sorceresses": "Sorcières",
+      "fairies": "Fées",
+      "rebel_princess": "Princesse rebelle",
+      "warrior_princess": "Princesse guerrière",
+      "exiled_princess": "Princesse exilée",
+      "iron_man": "Iron Man",
+      "superman": "Superman",
+      "batman": "Batman",
+      "spiderman": "Spider-Man",
+      "wonder_woman": "Wonder Woman",
+      "test_astronauts": "Astronautes d'essai",
+      "explorer_astronauts": "Astronautes explorateurs",
+      "dragons": "Dragons",
+      "griffins": "Griffons",
+      "pegasus": "Pégase",
+      "phoenix": "Phénix",
+      "child": "Enfant",
+      "father": "Père",
+      "mother": "Mère"
+    }
+  },
+  "soft_skills": {
+    "self_preservation": "Autoconservation et sécurité",
+    "positivity": "Positivité",
+    "empathy": "Empathie et compassion",
+    "creativity": "Créativité",
+    "curiosity": "Curiosité",
+    "courage": "Courage",
+    "stress_management": "Gestion du stress",
+    "self_motivation": "Auto-motivation",
+    "productivity": "Productivité",
+    "diligence": "Diligence",
+    "justice": "Justice",
+    "forgiveness": "Capacité à pardonner",
+    "friendship": "Amitié",
+    "prosocial_behavior": "Comportement prosocial",
+    "leadership": "Leadership",
+    "confidence": "Confiance",
+    "persuasion": "Persuasion",
+    "team_spirit": "Esprit d'équipe",
+    "flexibility": "Flexibilité",
+    "etiquette": "Étiquette"
+  },
+  "languages": {
+    "russian": "russe",
+    "english": "anglais",
+    "french": "français"
+  }
+}

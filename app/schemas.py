@@ -244,15 +244,8 @@ class StoryPreviewResponseSchema(BaseModel):
 
 # Схема данных для экрана "Главная"
 class MainResponseSchema(BaseModel):
-    compose_new_tale_text: str  # "Сочинить новую сказку:"
-    recent_label: str  # "Недавние"
-    my_collections_label: str  # "Мои сборники"
-    all_label: str  # "Все" (для кнопки показать все коллекции)
     stories: list[StoryPreviewResponseSchema]
     collections: list[CollectionPreviewResponseSchema]
-    # Сообщения для пустых состояний
-    empty_message_recent: Optional[str] = None
-    empty_message_collections: Optional[str] = None
 
 # Схема данных для детального просмотра коллекции
 class CollectionDetailsSchema(BaseModel):

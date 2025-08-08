@@ -1,0 +1,137 @@
+{
+  "ethnography": {
+    "germanic": {
+      "name": "Germanic",
+      "description": "moral subtext, punishment for stupidity/cruelty, magic, talking animals."
+    },
+    "slavic": {
+      "name": "Slavic",
+      "description": "heroic motifs, nature as a character, magical helpers."
+    },
+    "caucasian": {
+      "name": "Caucasian",
+      "description": "courage, honor, cunning, hospitality, struggle with fate and elements."
+    },
+    "turkic": {
+      "name": "Turkic",
+      "description": "eastern flavor, wisdom of dervishes, humor, importance of the word."
+    },
+    "french": {
+      "name": "French",
+      "description": "miracles, magical transformations, fairies, important lessons for children."
+    },
+    "scandinavian": {
+      "name": "Scandinavian",
+      "description": "trolls, giants, nature as a character, harshness of the world, justice."
+    },
+    "english_irish": {
+      "name": "English and Irish",
+      "description": "fairies, forest spirits, magical lands, moral dilemmas."
+    },
+    "italian": {
+      "name": "Italian",
+      "description": "prudence, punishment for lies/greed, miracles."
+    },
+    "spanish_portuguese": {
+      "name": "Spanish and Portuguese",
+      "description": "blend of Arabic and European influence, romantic and domestic tales."
+    },
+    "greek": {
+      "name": "Greek",
+      "description": "mythological and folklore plots."
+    },
+    "persian": {
+      "name": "Persian",
+      "description": "wisdom, fate, justice, parables."
+    },
+    "indian": {
+      "name": "Indian",
+      "description": "karma, responsibility, reincarnations, wise animals."
+    },
+    "chinese": {
+      "name": "Chinese",
+      "description": "respect for elders, natural forces, irony, morality, foundations of Tao and Confucianism."
+    },
+    "japanese": {
+      "name": "Japanese",
+      "description": "magical spirits, relationship with nature, honor, gratitude."
+    },
+    "jewish": {
+      "name": "Jewish",
+      "description": "wisdom, irony, fate and trials, ethical choice, domestic logic, humor, ethics, family values."
+    }
+  },
+  "genders": {
+    "boy": "Boy",
+    "girl": "Girl",
+    "universal": "Universal hero"
+  },
+  "interests": {
+    "categories": {
+      "animals": "Animals",
+      "transport": "Transport",
+      "magic": "Magic",
+      "princesses": "Princesses",
+      "superheroes": "Superheroes",
+      "astronauts": "Astronauts",
+      "mythical_creatures": "Mythical creatures",
+      "ordinary_people": "Ordinary children/adults",
+      "other": "Other"
+    },
+    "subcategories": {
+      "cats": "Cats",
+      "dogs": "Dogs",
+      "dinosaurs": "Dinosaurs",
+      "forest_animals": "Forest animals",
+      "cars": "Cars",
+      "trains": "Trains",
+      "planes": "Planes",
+      "sorceresses": "Sorceresses",
+      "fairies": "Fairies",
+      "rebel_princess": "Rebel princess",
+      "warrior_princess": "Warrior princess",
+      "exiled_princess": "Exiled princess",
+      "iron_man": "Iron Man",
+      "superman": "Superman",
+      "batman": "Batman",
+      "spiderman": "Spider-Man",
+      "wonder_woman": "Wonder Woman",
+      "test_astronauts": "Test astronauts",
+      "explorer_astronauts": "Explorer astronauts",
+      "dragons": "Dragons",
+      "griffins": "Griffins",
+      "pegasus": "Pegasus",
+      "phoenix": "Phoenix",
+      "child": "Child",
+      "father": "Father",
+      "mother": "Mother"
+    }
+  },
+  "soft_skills": {
+    "self_preservation": "Self-preservation and safety",
+    "positivity": "Positivity",
+    "empathy": "Empathy and compassion",
+    "creativity": "Creativity",
+    "curiosity": "Curiosity",
+    "courage": "Courage",
+    "stress_management": "Stress management",
+    "self_motivation": "Self-motivation",
+    "productivity": "Productivity",
+    "diligence": "Diligence",
+    "justice": "Justice",
+    "forgiveness": "Forgiveness",
+    "friendship": "Friendship",
+    "prosocial_behavior": "Prosocial behavior",
+    "leadership": "Leadership",
+    "confidence": "Confidence",
+    "persuasion": "Persuasion",
+    "team_spirit": "Team spirit",
+    "flexibility": "Flexibility",
+    "etiquette": "Etiquette"
+  },
+  "languages": {
+    "russian": "Russian",
+    "english": "English",
+    "french": "French"
+  }
+}

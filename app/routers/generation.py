@@ -11,6 +11,7 @@ from app.models import User, Collection, Story
 from app.schemas import Questionnaire, StoryGenerationResponse, UserAccessRequest
 from app.services.prompt_builder import prompt_user_builder
 from app.services.audio_maker import SimpleAudioMaker
+from app.services.markup_prompt import create_markup_prompt
 
 load_dotenv()
 router = APIRouter()
@@ -77,6 +78,36 @@ async def generate_tale_and_check_user(
                 )
 
             try:
+                client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+
+                markup_prompt = create_markup_prompt(tale_text)
+
+                response = await client.chat.completions.create(
+                    model=OPENAI_MODEL,
+                    response_format={"type": "json_object"},
+                    messages=[
+                        {"role": "system", "content": f"{markup_prompt["system_prompt_markup"]}. Всегда возвращай ответ в формате JSON."},
+                        {"role": "user",
+                         "content": f"{markup_prompt["user_prompt_markup"]}\n\nВерни ответ в формате JSON с полями: 'markup_tale' (текст сказки), "
+                                    f"'word_count' (количество слов), 'target_words_usage' (словарь использования целевых слов)."}
+                    ],
+                    temperature=0.3
+                )
+
+                # Парсим JSON ответ
+                markup_tale_data = json.loads(response.choices[0].message.content)
+
+                markup_tale_text = markup_tale_data['markup_tale']
+
+
+
+            except Exception as e:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Ошибка разметки сказки: {str(e)}"
+                )
+
+            try:
 
                 audio_url = await audio_maker.make_story_audio(tale_text)
 
@@ -101,7 +132,7 @@ async def generate_tale_and_check_user(
                 user_id=user_id,
                 collection_id=new_collection.id,
                 title=tale_title,
-                content_story=tale_text,
+                content_story=markup_tale_text,
                 audio_url=audio_url["url"],
                 duration_seconds=audio_url["duration"],
                 age_in_months=data.age_years*12 + data.age_months,
