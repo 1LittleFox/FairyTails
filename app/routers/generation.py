@@ -21,7 +21,7 @@ OPENAI_MODEL = "gpt-4-turbo"
 
 session_audio_maker = SimpleAudioMaker()
 yandex_audio_maker = YandexSpeechKitAudioMaker()
-google_audio_maker = GoogleCloudAudioMaker()
+# google_audio_maker = GoogleCloudAudioMaker()
 
 
 @router.post("/generation-tale", response_model=StoryGenerationResponse)
