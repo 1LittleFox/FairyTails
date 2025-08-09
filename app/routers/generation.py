@@ -119,6 +119,9 @@ async def generate_tale_and_check_user(
                 )
 
         else:
+
+            audio_url="Овучка для английского и русского в процессе"
+
             if data.language == "ENG":
                 voice_name = "en-US-Studio-O"
                 language_code = "en-US"
