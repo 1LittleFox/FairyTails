@@ -235,6 +235,7 @@ class CollectionPreviewResponseSchema(BaseModel):
     title: str
     preview_image: str #на будущее
     created_at: datetime
+    duration: str
 
 # Схема данных сказок пользователя для превью
 class StoryPreviewResponseSchema(BaseModel):

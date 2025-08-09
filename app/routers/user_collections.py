@@ -6,7 +6,7 @@ from sqlmodel import select, desc
 from app.database import SessionDep
 from app.models import Collection
 from app.schemas import UserCollectionsResponseSchema, CollectionResponseSchema
-from app.services.conversion_time import seconds_to_hms
+from app.services.conversion_time import seconds_to_hm
 
 router = APIRouter()
 
@@ -34,7 +34,7 @@ async def get_user_collections(
         CollectionResponseSchema(
             title=collection.title,
             created_at=collection.created_at,
-            duration=seconds_to_hms(collection.total_Listening_time)
+            duration=seconds_to_hm(collection.total_Listening_time)
         )
         for collection in collections_from_db
     ]

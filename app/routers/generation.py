@@ -119,12 +119,22 @@ async def generate_tale_and_check_user(
                 )
 
         else:
-
-            audio_url="Овучка для английского и русского в процессе"
+            audio_url = "Пусто"
 
             if data.language == "ENG":
                 voice_name = "en-US-Studio-O"
                 language_code = "en-US"
+
+                try:
+
+                    audio_url = await yandex_audio_maker.make_story_audio(tale_text)
+
+                except Exception as e:
+                    raise HTTPException(
+                        status_code=500,
+                        detail=f"Ошибка озвучивания сказки: {str(e)}"
+                    )
+
             else:
                 voice_name = "fr-FR-Studio-A"
                 language_code = "fr-FR"
