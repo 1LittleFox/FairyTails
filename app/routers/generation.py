@@ -10,7 +10,7 @@ from app.database import SessionDep
 from app.models import User, Collection, Story
 from app.schemas import Questionnaire, StoryGenerationResponse, UserAccessRequest
 from app.services.prompt_builder import prompt_user_builder
-from app.services.audio_maker import GoogleCloudAudioMaker, YandexSpeechKitAudioMaker
+from app.services.audio_maker import YandexSpeechKitAudioMaker
 from app.services.markup_prompt import create_markup_prompt
 
 load_dotenv()
@@ -20,7 +20,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = "gpt-4-turbo"
 
 yandex_audio_maker = YandexSpeechKitAudioMaker()
-google_audio_maker = GoogleCloudAudioMaker()
+# google_audio_maker = GoogleCloudAudioMaker()
 
 
 @router.post("/generation-tale", response_model=StoryGenerationResponse)
