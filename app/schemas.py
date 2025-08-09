@@ -213,7 +213,7 @@ class OptionsResponse(BaseModel):
 class CollectionResponseSchema(BaseModel):
     title: str
     created_at: datetime
-    duration: str
+    duration: int
 
 # Схема вывода всех коллекций пользователя
 class UserCollectionsResponseSchema(BaseModel):
@@ -235,14 +235,14 @@ class CollectionPreviewResponseSchema(BaseModel):
     title: str
     preview_image: str #на будущее
     created_at: datetime
-    duration: str
+    duration: int
 
 # Схема данных сказок пользователя для превью
 class StoryPreviewResponseSchema(BaseModel):
     id: uuid.UUID
     title: str
     created_at: datetime
-    duration: str
+    duration: int
     preview_image: str | None = None  # добавляем опциональное поле
 
 # Схема данных для экрана "Главная"

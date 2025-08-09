@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.i18n_config import setup_i18n
 
 from app.routers import (home, all_users,
-                         questionnaire_options, user_collections,
+                         questionnaire_options,
                          collections_detail, generation, creating_sequels, display_stories)
 
 app = FastAPI()
@@ -30,7 +30,6 @@ app.add_middleware(
 app.include_router(home.router)
 app.include_router(creating_sequels.router)
 app.include_router(questionnaire_options.router)
-app.include_router(user_collections.router)
 app.include_router(collections_detail.router)
 app.include_router(generation.router)
 app.include_router(display_stories.router)

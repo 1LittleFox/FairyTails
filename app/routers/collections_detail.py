@@ -4,7 +4,7 @@ from sqlmodel import select, desc
 from app.database import SessionDep
 from app.models import Collection, Story
 from app.schemas import CollectionDetailsSchema, StoryPreviewResponseSchema
-from app.services.conversion_time import seconds_to_hms
+from app.services.conversion_time import seconds_to_minutes
 
 router = APIRouter()
 
@@ -26,8 +26,9 @@ async def get_collection_details(
         StoryPreviewResponseSchema(
             id=story.id,
             title=story.title,
-            duration=seconds_to_hms(story.duration_seconds),
-            created_at=story.created_at
+            preview_image="Изображение коллекции",
+            created_at=story.created_at,
+            duration=seconds_to_minutes(story.duration_seconds)
         )
         for story in all_fairy_tails_in_collection
     ]

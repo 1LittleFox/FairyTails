@@ -4,7 +4,7 @@ from sqlmodel import select, desc
 from app.database import SessionDep
 from app.models import Collection, Story
 from app.schemas import MainResponseSchema, CollectionPreviewResponseSchema, StoryPreviewResponseSchema
-from app.services.conversion_time import seconds_to_hms, seconds_to_hm
+from app.services.conversion_time import seconds_to_hms, seconds_to_minutes
 
 router = APIRouter()
 
@@ -36,7 +36,7 @@ async def get_home_data(
             title=collection.title,
             preview_image="Изображение коллекции",
             created_at=collection.created_at,
-            duration=seconds_to_hm(collection.total_Listening_time)
+            duration=seconds_to_minutes(collection.total_Listening_time)
         )
         for collection in home_collections
     ]
@@ -46,7 +46,7 @@ async def get_home_data(
             id=story.id,
             title=story.title,
             created_at=story.created_at,
-            duration=seconds_to_hms(story.duration_seconds),
+            duration=seconds_to_minutes(story.duration_seconds),
             preview_image="Изображение сказки"
         )
         for story in home_stories
