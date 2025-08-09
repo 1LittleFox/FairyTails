@@ -12,15 +12,14 @@ from app.services.audio_maker import SimpleAudioMaker
 from app.services.prompt_continue import prompt_continue_builder
 from app.schemas import FollowUpQuestionnaire, StoryGenerationResponse
 from app.models import Story, User
-
+from app.routers.generation import google_audio_maker, yandex_audio_maker
+from app.services.markup_prompt import create_markup_prompt
 
 load_dotenv()
 router = APIRouter()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = "gpt-4-turbo"
-
-audio_maker = SimpleAudioMaker()
 
 
 @router.post("/stories/{story_id}/make_continue")
@@ -61,12 +60,13 @@ async def make_continue_for_story(
             model=OPENAI_MODEL,
             response_format={"type": "json_object"},
             messages=[
-                {"role": "system", "content": prompt_for_continuation["system"]},
+                {"role": "system", "content": f"{prompt_for_continuation["system"]}. Всегда возвращай ответ в формате JSON."},
                 {"role": "user",
-                 "content": prompt_for_continuation["user"]}
+                 "content": f"{prompt_for_continuation["user"]}\n\nВерни ответ в формате JSON с полями: 'tale' (текст сказки), "
+                                                f"'word_count' (количество слов), 'target_words_usage' (словарь использования целевых слов)."}
             ],
             temperature=0.3,
-            max_tokens=3500,
+            max_tokens=4096,
             top_p=0.95,
             frequency_penalty=0.5,
             presence_penalty=0.3
@@ -85,15 +85,93 @@ async def make_continue_for_story(
             detail=f"Ошибка генерации сказки: {str(e)}"
         )
 
-    try:
+    # try:
+    #
+    #     audio_url = await audio_maker.make_story_audio(tale_text)
+    #
+    # except Exception as e:
+    #     raise HTTPException(
+    #         status_code=500,
+    #         detail=f"Ошибка озвучивания сказки: {str(e)}"
+    #     )
 
-        audio_url = await audio_maker.make_story_audio(tale_text)
+    if basis_for_continuation.language == "РУС":
+        try:
+            client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Ошибка озвучивания сказки: {str(e)}"
-        )
+            markup_prompt = create_markup_prompt(tale_text)
+
+            response = await client.chat.completions.create(
+                model=OPENAI_MODEL,
+                response_format={"type": "json_object"},
+                messages=[
+                    {"role": "system",
+                     "content": f"{markup_prompt["system_prompt_markup"]}. Всегда возвращай ответ в формате JSON."},
+                    {"role": "user",
+                     "content": f"{markup_prompt["user_prompt_markup"]}\n\nВерни ответ в формате JSON с полями: 'markup_tale' (текст сказки), "
+                                f"'word_count' (количество слов), 'target_words_usage' (словарь использования целевых слов)."}
+                ],
+                temperature=0.3
+            )
+
+            # Парсим JSON ответ
+            markup_tale_data = json.loads(response.choices[0].message.content)
+
+            markup_tale_text = markup_tale_data['markup_tale']
+
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Ошибка разметки сказки: {str(e)}"
+            )
+
+        try:
+
+            audio_url = await yandex_audio_maker.make_story_audio(markup_tale_text)
+
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Ошибка озвучивания сказки: {str(e)}"
+            )
+
+    else:
+
+        if basis_for_continuation.language == "ENG":
+            voice_name = "en-US-Studio-O"
+            language_code = "en-US"
+
+            try:
+
+                audio_url = await google_audio_maker.make_story_audio(
+                    story_text=tale_text,
+                    voice_name=voice_name,
+                    language_code=language_code
+                )
+
+            except Exception as e:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Ошибка озвучивания сказки: {str(e)}"
+                )
+
+        else:
+            voice_name = "fr-FR-Studio-A"
+            language_code = "fr-FR"
+
+            try:
+
+                audio_url = await google_audio_maker.make_story_audio(
+                    story_text=tale_text,
+                    voice_name=voice_name,
+                    language_code=language_code
+                )
+
+            except Exception as e:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Ошибка озвучивания сказки: {str(e)}"
+                )
 
     new_story = Story(
         user_id=basis_for_continuation.user_id,

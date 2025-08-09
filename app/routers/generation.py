@@ -61,7 +61,7 @@ async def generate_tale_and_check_user(
                                                 f"'word_count' (количество слов), 'target_words_usage' (словарь использования целевых слов)."}
                 ],
                 temperature=0.3,
-                max_tokens=20000,
+                max_tokens=4096,
                 top_p=0.95,
                 frequency_penalty=0.5,
                 presence_penalty=0.3
