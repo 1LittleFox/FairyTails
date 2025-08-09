@@ -9,7 +9,7 @@ from app.services.conversion_time import seconds_to_minutes
 router = APIRouter()
 
 
-@router.get("/users/{user_id}/collections/{id}", response_model=CollectionDetailsSchema)
+@router.get("/collections/{id}", response_model=CollectionDetailsSchema)
 async def get_collection_details(
         id: str | None,
         session: SessionDep

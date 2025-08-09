@@ -1,3 +1,4 @@
+import json
 import os
 import io
 import uuid
@@ -6,7 +7,6 @@ import aiohttp
 
 from openai import AsyncOpenAI
 from datetime import datetime
-from typing import Optional
 from dotenv import load_dotenv
 from google.cloud import texttospeech
 from google.oauth2 import service_account
@@ -189,20 +189,13 @@ class YandexSpeechKitAudioMaker:
 
         return file_url
 
-    async def make_story_audio(self, story_text: str, voice: Optional[str] = None,
-                               emotion: Optional[str] = None,
-                               speed: Optional[float] = None,
-                               lang: Optional[str] = None) -> dict:
+    async def make_story_audio(self, story_text: str) -> dict:
         """ГЛАВНАЯ ФУНКЦИЯ: Текст → Аудио (Yandex SpeechKit) → S3 → URL"""
 
         try:
             # Шаг 1: Текст → Аудио через Yandex SpeechKit
             audio_data, duration = await self.create_audio(
-                story_text,
-                voice=voice,
-                emotion=emotion,
-                speed=speed,
-                lang=lang
+                story_text
             )
 
             # Шаг 2: Аудио → S3
@@ -222,9 +215,13 @@ class GoogleCloudAudioMaker:
     """Класс для создания аудио через Google Cloud TTS и загрузки в S3"""
 
     def __init__(self):
-        # Если ключ передан как путь к файлу
-        credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-        self.credentials = service_account.Credentials.from_service_account_file(credentials_path)
+        credentials_json = os.getenv("GOOGLE_CLOUD_CREDENTIALS")
+        if not credentials_json:
+            raise ValueError("GOOGLE_CLOUD_CREDENTIALS environment variable not found")
+
+        # Парсим JSON и создаем credentials объект
+        credentials_dict = json.loads(credentials_json)
+        self.credentials = service_account.Credentials.from_service_account_info(credentials_dict)
 
         self.project_id = os.getenv("GOOGLE_CLOUD_PROJECT_ID")
         self.client = texttospeech.TextToSpeechClient(credentials=self.credentials)
