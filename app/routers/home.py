@@ -16,7 +16,7 @@ async def get_home_data(
 
     if not user_id or user_id in ["null", "undefined", "anonymous"]:
         return MainResponseSchema(
-            stories=[],
+            recent_tales=[],
             collections=[]
         )
 
@@ -34,7 +34,8 @@ async def get_home_data(
         CollectionPreviewResponseSchema(
             id=collection.id,
             title=collection.title,
-            url_image="Изображение коллекции",
+            preview_image="Изображение коллекции",
+            created_at=collection.created_at
         )
         for collection in home_collections
     ]
@@ -44,16 +45,13 @@ async def get_home_data(
             id=story.id,
             title=story.title,
             created_at=story.created_at,
-            duration=seconds_to_hms(story.duration_seconds)
+            duration=seconds_to_hms(story.duration_seconds),
+            preview_image="Изображение сказки"
         )
         for story in home_stories
     ]
 
-    # 8. Определяем нужны ли сообщения для пустых состояний
-    empty_message_recent = None
-    empty_message_collections = None
-
     return MainResponseSchema(
-        stories=recent_stories,
+        recent_tales=recent_stories,
         collections=recent_collections
     )

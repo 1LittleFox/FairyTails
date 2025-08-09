@@ -233,7 +233,8 @@ class StoryGenerationResponse(BaseModel):
 class CollectionPreviewResponseSchema(BaseModel):
     id: uuid.UUID
     title: str
-    url_image: str #на будущее
+    preview_image: str #на будущее
+    created_at: datetime
 
 # Схема данных сказок пользователя для превью
 class StoryPreviewResponseSchema(BaseModel):
@@ -241,10 +242,11 @@ class StoryPreviewResponseSchema(BaseModel):
     title: str
     created_at: datetime
     duration: str
+    preview_image: str | None = None  # добавляем опциональное поле
 
 # Схема данных для экрана "Главная"
 class MainResponseSchema(BaseModel):
-    stories: list[StoryPreviewResponseSchema]
+    recent_tales: list[StoryPreviewResponseSchema]
     collections: list[CollectionPreviewResponseSchema]
 
 # Схема данных для детального просмотра коллекции
