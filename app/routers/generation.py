@@ -10,7 +10,7 @@ from app.database import SessionDep
 from app.models import User, Collection, Story
 from app.schemas import Questionnaire, StoryGenerationResponse, UserAccessRequest
 from app.services.prompt_builder import prompt_user_builder
-from app.services.audio_maker import SimpleAudioMaker
+from app.services.audio_maker import GoogleCloudAudioMaker, YandexSpeechKitAudioMaker
 from app.services.markup_prompt import create_markup_prompt
 
 load_dotenv()
@@ -19,7 +19,9 @@ router = APIRouter()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = "gpt-4-turbo"
 
-audio_maker = SimpleAudioMaker()
+yandex_audio_maker = YandexSpeechKitAudioMaker()
+google_audio_maker = GoogleCloudAudioMaker()
+
 
 @router.post("/generation-tale", response_model=StoryGenerationResponse)
 async def generate_tale_and_check_user(
@@ -44,39 +46,40 @@ async def generate_tale_and_check_user(
 
     if existing_user:
 
-            try:
-                client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+        try:
+            client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
-                prompt = prompt_user_builder(data)
+            prompt = prompt_user_builder(data)
 
-                response = await client.chat.completions.create(
-                    model=OPENAI_MODEL,
-                    response_format={"type": "json_object"},
-                    messages=[
-                        {"role": "system", "content": f"{prompt["system"]}. Всегда возвращай ответ в формате JSON."},
-                        {"role": "user", "content": f"{prompt["user"]}\n\nВерни ответ в формате JSON с полями: 'tale' (текст сказки), "
-                                                    f"'word_count' (количество слов), 'target_words_usage' (словарь использования целевых слов)."}
-                    ],
-                    temperature=0.3,
-                    max_tokens=3500,
-                    top_p=0.95,
-                    frequency_penalty=0.5,
-                    presence_penalty=0.3
-                )
+            response = await client.chat.completions.create(
+                model=OPENAI_MODEL,
+                response_format={"type": "json_object"},
+                messages=[
+                    {"role": "system", "content": f"{prompt["system"]}. Всегда возвращай ответ в формате JSON."},
+                    {"role": "user", "content": f"{prompt["user"]}\n\nВерни ответ в формате JSON с полями: 'tale' (текст сказки), "
+                                                f"'word_count' (количество слов), 'target_words_usage' (словарь использования целевых слов)."}
+                ],
+                temperature=0.3,
+                max_tokens=3500,
+                top_p=0.95,
+                frequency_penalty=0.5,
+                presence_penalty=0.3
+            )
 
-                # Парсим JSON ответ
-                tale_data = json.loads(response.choices[0].message.content)
+            # Парсим JSON ответ
+            tale_data = json.loads(response.choices[0].message.content)
 
-                tale_text = tale_data['tale']
+            tale_text = tale_data['tale']
 
-                tale_title = " ".join(tale_text.split()[:2]) + "..."
+            tale_title = " ".join(tale_text.split()[:2]) + "..."
 
-            except Exception as e:
-                raise HTTPException(
-                    status_code=500,
-                    detail=f"Ошибка генерации сказки: {str(e)}"
-                )
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Ошибка генерации сказки: {str(e)}"
+            )
 
+        if data.language == "РУС":
             try:
                 client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
@@ -107,7 +110,7 @@ async def generate_tale_and_check_user(
 
             try:
 
-                audio_url = await audio_maker.make_story_audio(tale_text)
+                audio_url = await yandex_audio_maker.make_story_audio(markup_tale_text)
 
             except Exception as e:
                 raise HTTPException(
@@ -115,41 +118,50 @@ async def generate_tale_and_check_user(
                     detail=f"Ошибка озвучивания сказки: {str(e)}"
                 )
 
+        else:
+            if data.language == "ENG":
+                voice_name = "en-US-Studio-O"
+                language_code = "en-US"
+            else:
+                voice_name = "fr-FR-Studio-A"
+                language_code = "fr-FR"
 
-            new_collection = Collection(
-                user_id=user_id,
-                title=f"Stories about {tale_title}",
-                total_Listening_time=audio_url["duration"]
-            )
 
-            session.add(new_collection)
-            await session.commit()
-            await session.refresh(new_collection)
 
-            new_story = Story(
-                user_id=user_id,
-                collection_id=new_collection.id,
-                title=tale_title,
-                content_story=tale_text,
-                audio_url=audio_url["url"],
-                duration_seconds=audio_url["duration"],
-                age_in_months=data.age_years*12 + data.age_months,
-                ethnography=data.ethnography_choice,
-                language=data.language,
-                gender=data.gender,
-                interests=data.subcategories
-            )
+        new_collection = Collection(
+            user_id=user_id,
+            title=f"Stories about {tale_title}",
+            total_Listening_time=audio_url["duration"]
+        )
 
-            session.add(new_story)
-            await session.commit()
-            await session.refresh(new_story)
+        session.add(new_collection)
+        await session.commit()
+        await session.refresh(new_collection)
 
-            return StoryGenerationResponse(
-                user_id=user_id,
-                created_at=new_story.created_at,
-                content=new_story.content_story,
-                url=new_story.audio_url
-            )
+        new_story = Story(
+            user_id=user_id,
+            collection_id=new_collection.id,
+            title=tale_title,
+            content_story=tale_text,
+            audio_url=audio_url["url"],
+            duration_seconds=audio_url["duration"],
+            age_in_months=data.age_years*12 + data.age_months,
+            ethnography=data.ethnography_choice,
+            language=data.language,
+            gender=data.gender,
+            interests=data.subcategories
+        )
+
+        session.add(new_story)
+        await session.commit()
+        await session.refresh(new_story)
+
+        return StoryGenerationResponse(
+            user_id=user_id,
+            created_at=new_story.created_at,
+            content=new_story.content_story,
+            url=new_story.audio_url
+        )
 
     else:
         # User ID doesn't exist - return error or create new user with that ID
