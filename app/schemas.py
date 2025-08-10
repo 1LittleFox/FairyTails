@@ -304,3 +304,12 @@ class AudioStoryResponse(BaseModel):
     title: str
     audio_url: str
     text_content: str
+
+class DeleteResponse(BaseModel):
+    message: str
+    deleted_id: uuid.UUID
+
+class CollectionDeleteResponse(BaseModel):
+    message: str
+    deleted_collection_id: uuid.UUID
+    deleted_stories_count: int
