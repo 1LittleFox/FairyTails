@@ -5,13 +5,14 @@ from datetime import datetime, UTC
 from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException
 from openai import AsyncOpenAI
+from sqlalchemy import func
 from sqlmodel import select
 
 from app.database import SessionDep
 from app.services.audio_maker import SimpleAudioMaker
 from app.services.prompt_continue import prompt_continue_builder
 from app.schemas import FollowUpQuestionnaire, StoryGenerationResponse
-from app.models import Story, User
+from app.models import Story, User, Collection
 from app.routers.generation import google_audio_maker, yandex_audio_maker
 from app.services.markup_prompt import create_markup_prompt
 
@@ -181,8 +182,8 @@ async def make_continue_for_story(
         audio_url=audio_url["url"],
         duration_seconds=audio_url["duration"],
         age_in_months=new_age,
-        ethnography_choice=basis_for_continuation.ethnography,
-        interest=basis_for_continuation.interests,
+        ethnography=basis_for_continuation.ethnography,
+        interests=basis_for_continuation.interests,
         language=basis_for_continuation.language,
         gender=basis_for_continuation.gender
     )
@@ -190,6 +191,27 @@ async def make_continue_for_story(
     session.add(new_story)
     await session.commit()
     await session.refresh(new_story)
+
+    # Получаем коллекцию
+    collection_statement = select(Collection).where(Collection.id == basis_for_continuation.collection_id)
+    collection_result = await session.execute(collection_statement)
+    collection = collection_result.scalars().first()
+
+    if not collection:
+        raise ValueError(f"Collection with ID {basis_for_continuation.collection_id} not found")
+
+    # Вычисляем сумму времени всех сказок в коллекции
+    total_time_statement = select(func.coalesce(func.sum(Story.duration_seconds), 0)).where(
+        Story.collection_id == basis_for_continuation.collection_id
+    )
+    total_time_result = await session.execute(total_time_statement)
+    total_listening_time = total_time_result.scalar()
+
+    # Обновляем коллекцию
+    collection.total_Listening_time = total_listening_time
+
+    await session.commit()
+    await session.refresh(collection)
 
     return StoryGenerationResponse(
         user_id=basis_for_continuation.user_id,
