@@ -216,6 +216,7 @@ async def generate_tale_and_check_user(
         return StoryGenerationResponse(
             user_id=user_id,
             created_at=new_story.created_at,
+            title=new_story.title,
             content=new_story.content_story,
             url=new_story.audio_url
         )

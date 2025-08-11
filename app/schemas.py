@@ -226,6 +226,7 @@ class UserAccessRequest(BaseModel):
 class StoryGenerationResponse(BaseModel):
     user_id: uuid.UUID
     created_at: datetime
+    title: str
     content: str
     url: str
 

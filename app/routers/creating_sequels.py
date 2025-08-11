@@ -243,6 +243,7 @@ async def make_continue_for_story(
     return StoryGenerationResponse(
         user_id=basis_for_continuation.user_id,
         created_at=new_story.created_at,
+        title=new_story.title,
         content=new_story.content_story,
         url=new_story.audio_url
     )
