@@ -124,8 +124,8 @@ class Questionnaire(BaseModel):
             if not (isinstance(item, str) and item.strip()):
                 raise ValueError("Отправлены пустые значения")
 
-        if not re.match(r"^[a-zA-Zа-яА-ЯёЁ\-]+$", subcategory_values[0]):
-            raise ValueError("Используйте только буквы и дефис")
+        if not re.match(r"^[a-zA-Zа-яА-ЯёЁ\-\s]+$", subcategory_values[0]):
+            raise ValueError("Используйте только буквы, пробел и дефис")
 
         category = values.get('interest_category')
         # Для MVP проверяем только общие ограничения
