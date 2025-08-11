@@ -61,7 +61,7 @@ def prompt_continue_builder(
         5. The fairy tale must be in the range from {data.story_duration_minutes}.
         6. Be sure to include the child's interests listed below: {interest}
         7. List of words and expressions to memorize: {", ".join(data.target_words)}. These words and expressions must be seamlessly integrated into the tale text. Use each given word at least 2 times in different contexts..
-        8. Target soft skills: {data.soft_skills.value}. The tale should foster the development of the specified soft skills through plot situations, dialogues, and character actions.
+        8. Target soft skills: {data.soft_skills}. The tale should foster the development of the specified soft skills through plot situations, dialogues, and character actions.
         9. Exclude anxiety-inducing or frightening scenes (considering the specified age), including loss, loneliness, illness, injury, conflicts, destruction, etc.
         10. The tale structure must include (in order of narration):
             1) Exposition, which should include a minimum of {data.story_duration_minutes*120*0.1} characters ;

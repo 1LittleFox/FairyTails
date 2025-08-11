@@ -248,7 +248,7 @@ class GoogleCloudAudioMaker:
         """ШАГ 1: Создаем аудио из текста через Google Cloud TTS"""
 
         # Настройка входного текста
-        synthesis_input = texttospeech.SynthesisInput(text=text)
+        synthesis_input = texttospeech.SynthesisInput(ssml=text)
 
         # Настройка голоса
         voice = texttospeech.VoiceSelectionParams(

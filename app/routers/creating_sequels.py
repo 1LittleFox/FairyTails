@@ -14,7 +14,7 @@ from app.services.prompt_continue import prompt_continue_builder
 from app.schemas import FollowUpQuestionnaire, StoryGenerationResponse
 from app.models import Story, User, Collection
 from app.routers.generation import google_audio_maker, yandex_audio_maker
-from app.services.markup_prompt import create_markup_prompt
+from app.services.markup_prompt import create_markup_prompt_from_ru, create_markup_prompt_from_euro
 
 load_dotenv()
 router = APIRouter()
@@ -100,7 +100,7 @@ async def make_continue_for_story(
         try:
             client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
-            markup_prompt = create_markup_prompt(tale_text)
+            markup_prompt = create_markup_prompt_from_ru(tale_text)
 
             response = await client.chat.completions.create(
                 model=OPENAI_MODEL,
@@ -137,15 +137,42 @@ async def make_continue_for_story(
             )
 
     else:
+        try:
+            client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+            markup_prompt = create_markup_prompt_from_euro(tale_text)
+            response = await client.chat.completions.create(
+                model=OPENAI_MODEL,
+                response_format={"type": "json_object"},
+                messages=[
+                    {"role": "system",
+                     "content": f"{markup_prompt["system_prompt_markup"]}. Always return a response in JSON format.."},
+                    {"role": "user",
+                     "content": f"{markup_prompt["user_prompt_markup"]}\n\nReturn the response in JSON format with the fields: 'markup_tale' (text of the fairy tale), "
+                                f"'word_count' (number of words), 'target_words_usage' (dictionary of the use of target words)."}
+                ],
+                temperature=0.3
+            )
 
-        if basis_for_continuation.language == "ENG":
-            voice_name = "en-US-Studio-O"
-            language_code = "en-US"
+            # Парсим JSON ответ
+
+            markup_tale_data = json.loads(response.choices[0].message.content)
+            markup_tale_text = markup_tale_data['markup_tale']
+
+
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Ошибка разметки сказки: {str(e)}"
+            )
+
+        if basis_for_continuation.language == "FRA":
+            voice_name = "fr-FR-Studio-A"
+            language_code = "fr-FR"
 
             try:
 
                 audio_url = await google_audio_maker.make_story_audio(
-                    story_text=tale_text,
+                    story_text=markup_tale_text,
                     voice_name=voice_name,
                     language_code=language_code
                 )
@@ -157,13 +184,13 @@ async def make_continue_for_story(
                 )
 
         else:
-            voice_name = "fr-FR-Studio-A"
-            language_code = "fr-FR"
+            voice_name = "en-US-Studio-O"
+            language_code = "en-US"
 
             try:
 
                 audio_url = await google_audio_maker.make_story_audio(
-                    story_text=tale_text,
+                    story_text=markup_tale_text,
                     voice_name=voice_name,
                     language_code=language_code
                 )

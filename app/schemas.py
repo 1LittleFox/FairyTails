@@ -289,7 +289,7 @@ class FollowUpQuestionnaire(BaseModel):
         description="Целевые слова/звуки для включения в сказку"
     )
 
-    soft_skills: SoftSkillEnum = Field(
+    soft_skills: List[str] = Field(
         ...,
         description="Развиваемые мягкие навыки (не более 3)"
     )
