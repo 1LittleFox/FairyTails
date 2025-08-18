@@ -17,7 +17,7 @@ load_dotenv()
 router = APIRouter()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = "gpt-4-turbo"
+OPENAI_MODEL = "gpt-4o"
 
 session_audio_maker = SimpleAudioMaker()
 yandex_audio_maker = YandexSpeechKitAudioMaker()
@@ -60,17 +60,40 @@ async def generate_tale_and_check_user(
                     {"role": "user", "content": f"{prompt["user"]}\n\nВерни ответ в формате JSON с полями: 'tale' (текст сказки), "
                                                 f"'word_count' (количество слов), 'target_words_usage' (словарь использования целевых слов)."}
                 ],
-                temperature=0.3,
-                max_tokens=4096,
-                top_p=0.95,
-                frequency_penalty=0.5,
-                presence_penalty=0.3
+                temperature=1.3,
+                max_tokens=16384,
+                top_p=1.0,
+                frequency_penalty=0.2,
+                presence_penalty=0.2
             )
 
             # Парсим JSON ответ
             tale_data = json.loads(response.choices[0].message.content)
 
             tale_text = tale_data['tale']
+
+            if len(tale_text) < prompt["awg"]:
+                expand_prompt = f"""
+                    Расширь эту сказку до {prompt["awg"]} символов. 
+                    Добавь смысловой нагрузки и связанных со сказкой деталей:
+
+                    {tale_text}
+                    """
+
+                response = await client.chat.completions.create(
+                    model=OPENAI_MODEL,
+                    response_format={"type": "json_object"},
+                    messages=[{"role": "user", "content": f"{expand_prompt}\n\nВерни ответ в формате JSON с полями: 'tale' (текст сказки), "
+                                                f"'word_count' (количество слов), 'target_words_usage' (словарь использования целевых слов)."}],
+                    temperature=0.5,
+                    max_tokens=16384
+                )
+
+                if not response.choices[0].message.content:
+                    raise ValueError("Пустой ответ от OpenAI")
+
+                tale_data = json.loads(response.choices[0].message.content)
+                tale_text = tale_data['tale']
 
             tale_title = " ".join(tale_text.split()[:2]) + "..."
 

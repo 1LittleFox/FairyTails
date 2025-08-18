@@ -135,7 +135,7 @@ class YandexSpeechKitAudioMaker:
             'lang': 'ru-RU',
             'voice': 'zahar',
             'emotion': 'neutral',
-            'speed': 1.0,
+            'speed': 0.94,
             'format': 'mp3',
             'sampleRateHertz': 48000,
             'folderId': self.folder_id
