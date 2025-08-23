@@ -1,5 +1,6 @@
 import json
 import os
+import time
 
 from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException
@@ -9,22 +10,23 @@ from sqlmodel import select
 from app.database import SessionDep
 from app.models import User, Collection, Story
 from app.schemas import Questionnaire, StoryGenerationResponse, UserAccessRequest
-from app.services.prompt_builder import prompt_user_builder
-from app.services.audio_maker import YandexSpeechKitAudioMaker, GoogleCloudAudioMaker, SimpleAudioMaker
+from app.services.audio_maker import YandexSpeechKitAudioMaker, GoogleCloudAudioMaker
 from app.services.markup_prompt import create_markup_prompt_from_ru, create_markup_prompt_from_euro
+from app.services.prompt_builder import prompt_user_builder
 
 load_dotenv()
 router = APIRouter()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = "gpt-4o"
+OPENAI_MODEL = "gpt-5"
+OPENAI_MODEL_FOR_MARKUP = "gpt-4o"
 
-session_audio_maker = SimpleAudioMaker()
+
 yandex_audio_maker = YandexSpeechKitAudioMaker()
 google_audio_maker = GoogleCloudAudioMaker()
 
 
-@router.post("/generation-tale", response_model=StoryGenerationResponse)
+@router.post("/generation-tales", response_model=StoryGenerationResponse)
 async def generate_tale_and_check_user(
         session: SessionDep,
         request: UserAccessRequest,
@@ -47,6 +49,8 @@ async def generate_tale_and_check_user(
 
     if existing_user:
 
+        print("Начали генерацию")
+        start_time = time.time()
         try:
             client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
@@ -56,15 +60,12 @@ async def generate_tale_and_check_user(
                 model=OPENAI_MODEL,
                 response_format={"type": "json_object"},
                 messages=[
-                    {"role": "system", "content": f"{prompt["system"]}. Всегда возвращай ответ в формате JSON."},
-                    {"role": "user", "content": f"{prompt["user"]}\n\nВерни ответ в формате JSON с полями: 'tale' (текст сказки), "
+                    {"role": "system", "content": f"{prompt['system']}. Всегда возвращай ответ в формате JSON."},
+                    {"role": "user", "content": f"{prompt['user']}\n\nВерни ответ в формате JSON с полями: 'tale' (текст сказки), "
                                                 f"'word_count' (количество слов), 'target_words_usage' (словарь использования целевых слов)."}
                 ],
-                temperature=1.3,
-                max_tokens=16384,
-                top_p=1.0,
-                frequency_penalty=0.2,
-                presence_penalty=0.2
+                temperature=1,
+                max_completion_tokens=16384
             )
 
             # Парсим JSON ответ
@@ -72,9 +73,14 @@ async def generate_tale_and_check_user(
 
             tale_text = tale_data['tale']
 
+            elapsed = time.time() - start_time
+            print(f"Генерация закончена: {elapsed:.1f} сек")
+
             if len(tale_text) < prompt["awg"]:
+                print("Начинаем увеличение сказки")
+                start_time = time.time()
                 expand_prompt = f"""
-                    Расширь эту сказку до {prompt["awg"]} символов. 
+                    Расширь эту сказку до {prompt["awg"]} символов.
                     Добавь смысловой нагрузки и связанных со сказкой деталей:
 
                     {tale_text}
@@ -85,8 +91,8 @@ async def generate_tale_and_check_user(
                     response_format={"type": "json_object"},
                     messages=[{"role": "user", "content": f"{expand_prompt}\n\nВерни ответ в формате JSON с полями: 'tale' (текст сказки), "
                                                 f"'word_count' (количество слов), 'target_words_usage' (словарь использования целевых слов)."}],
-                    temperature=0.5,
-                    max_tokens=16384
+                    temperature=1,
+                    max_completion_tokens=16384
                 )
 
                 if not response.choices[0].message.content:
@@ -103,6 +109,14 @@ async def generate_tale_and_check_user(
                 detail=f"Ошибка генерации сказки: {str(e)}"
             )
 
+        elapsed = time.time() - start_time
+        print(f"Сказка написана: {elapsed:.1f} сек, приступаем к озвучке")
+
+        characters_tale = len(tale_text)
+        print(f"Длина сказки: {characters_tale}")
+
+        print(f"Приступаем к разметке")
+        start_time = time.time()
         if data.language == "РУС":
             try:
                 client = AsyncOpenAI(api_key=OPENAI_API_KEY)
@@ -110,15 +124,15 @@ async def generate_tale_and_check_user(
                 markup_prompt = create_markup_prompt_from_ru(tale_text)
 
                 response = await client.chat.completions.create(
-                    model=OPENAI_MODEL,
+                    model=OPENAI_MODEL_FOR_MARKUP,
                     response_format={"type": "json_object"},
                     messages=[
-                        {"role": "system", "content": f"{markup_prompt["system_prompt_markup"]}. Всегда возвращай ответ в формате JSON."},
+                        {"role": "system", "content": f"{markup_prompt['system_prompt_markup']}. Всегда возвращай ответ в формате JSON."},
                         {"role": "user",
-                         "content": f"{markup_prompt["user_prompt_markup"]}\n\nВерни ответ в формате JSON с полями: 'markup_tale' (текст сказки), "
+                         "content": f"{markup_prompt['user_prompt_markup']}\n\nВерни ответ в формате JSON с полями: 'markup_tale' (текст сказки), "
                                     f"'word_count' (количество слов), 'target_words_usage' (словарь использования целевых слов)."}
                     ],
-                    temperature=0.3
+                    temperature=1
                 )
 
                 # Парсим JSON ответ
@@ -131,7 +145,10 @@ async def generate_tale_and_check_user(
                     status_code=500,
                     detail=f"Ошибка разметки сказки: {str(e)}"
                 )
+            elapsed = time.time() - start_time
+            print(f"Разметка выполнена успешно: {elapsed:.1f} сек")
 
+            start_time = time.time()
             try:
 
                 audio_url = await yandex_audio_maker.make_story_audio(markup_tale_text)
@@ -142,8 +159,13 @@ async def generate_tale_and_check_user(
                     detail=f"Ошибка озвучивания сказки: {str(e)}"
                 )
 
-        else:
+            elapsed = time.time() - start_time
+            print(f"Озвучка выполнена успешно: {elapsed:.1f} сек"
+                  f"{markup_tale_text}")
 
+        else:
+            print(f"Приступаем к разметке для GC")
+            start_time = time.time()
             try:
                 client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
@@ -153,12 +175,12 @@ async def generate_tale_and_check_user(
                     model=OPENAI_MODEL,
                     response_format={"type": "json_object"},
                     messages=[
-                        {"role": "system", "content": f"{markup_prompt["system_prompt_markup"]}. Always return a response in JSON format.."},
+                        {"role": "system", "content": f"{markup_prompt['system_prompt_markup']}. Always return a response in JSON format."},
                         {"role": "user",
-                         "content": f"{markup_prompt["user_prompt_markup"]}\n\nReturn the response in JSON format with the fields: 'markup_tale' (text of the fairy tale), "
+                         "content": f"{markup_prompt['user_prompt_markup']}\n\nReturn the response in JSON format with the fields: 'markup_tale' (text of the fairy tale), "
                                     f"'word_count' (number of words), 'target_words_usage' (dictionary of the use of target words)."}
                     ],
-                    temperature=0.3
+                    temperature=1
                 )
 
                 # Парсим JSON ответ
@@ -166,16 +188,22 @@ async def generate_tale_and_check_user(
 
                 markup_tale_text = markup_tale_data['markup_tale']
 
+                markup_tale_text = str(markup_tale_text)
+                print(type(markup_tale_text))
+
             except Exception as e:
                 raise HTTPException(
                     status_code=500,
                     detail=f"Ошибка разметки сказки: {str(e)}"
                 )
+            elapsed = time.time() - start_time
+            print(f"Разметка выполнена успешно: {elapsed:.1f} сек"
+                  f"{markup_tale_text}")
 
             if data.language == "FRA":
                 voice_name = "fr-FR-Studio-A"
                 language_code = "fr-FR"
-
+                print(f"Начинаем озвучку")
                 try:
 
                     audio_url = await google_audio_maker.make_story_audio(
@@ -189,11 +217,11 @@ async def generate_tale_and_check_user(
                         status_code=500,
                         detail=f"Ошибка озвучивания сказки: {str(e)}"
                     )
-
+                print(f"Заканчиваем озвучку")
             else:
                 voice_name = "en-US-Studio-O"
                 language_code = "en-US"
-
+                print(f"Начинаем озвучку")
                 try:
 
                     audio_url = await google_audio_maker.make_story_audio(
@@ -207,10 +235,11 @@ async def generate_tale_and_check_user(
                         status_code=500,
                         detail=f"Ошибка озвучивания сказки: {str(e)}"
                     )
+                print(f"Заканчиваем озвучку")
 
         new_collection = Collection(
             user_id=user_id,
-            title=f"Stories about {tale_title}",
+            title=f"{tale_title}",
             total_Listening_time=audio_url["duration"]
         )
 

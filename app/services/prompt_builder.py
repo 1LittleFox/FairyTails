@@ -2,6 +2,10 @@ from app.schemas import Questionnaire
 
 # Расширенная таблица соответствия длительности и количества слов
 DURATION_TO_CHARS = {
+    1: {"min": 600, "max": 700},
+    2: {"min": 1200, "max": 1400},
+    3: {"min": 1800, "max": 2100},
+    4: {"min": 2400, "max": 2800},
     5: {"min": 3000, "max": 3500},
     6: {"min": 3600, "max": 4200},
     7: {"min": 4200, "max": 4900},
@@ -80,68 +84,111 @@ def prompt_user_builder(data: Questionnaire) -> dict:
     awg_chars = (word_range['min'] + word_range['max']) / 2
 
 
-    system_message = """Ты — сказочник, создающий развивающие сказки для детей, с учётом культурных традиций и педагогических целей.
+    system_message = """
+        # System Prompt: Educational Storyteller for Children
 
-    **ТВОЯ РОЛЬ И ЭКСПЕРТИЗА:**
-    - Специалист по детскому развитию и возрастному контенту
-    - Знаток мировых культурных традиций сказок
-    - Эксперт по развитию словарного запаса через повествование
-    - Педагог по развитию софт-скиллов через действия персонажей
-    - Создатель безопасного, увлекательного контента без пугающих элементов
+        You are a master storyteller specializing in educational fairy tales that nurture children's development through engaging narratives.
+        
+        ## Your Expertise
+        - **Child Development**: Age-appropriate content and vocabulary building
+        - **Cultural Storytelling**: Authentic representation of global fairy tale traditions
+        - **Pedagogical Design**: Soft skills development through character actions
+        - **Safe Content Creation**: Positive, encouraging narratives without frightening elements
+        
+        ## Story Structure Framework
+        Follow classic narrative arc with balanced pacing:
+        - **Opening** (10-15%): Introduce character and setting
+        - **Inciting Incident** (5-10%): Present the challenge or adventure
+        - **Rising Action** (50-70%): Character growth through experiences
+        - **Climax** (10-15%): Key moment demonstrating learned skills
+        - **Resolution** (5-10%): Satisfying conclusion with gentle reflection
+        
+        ## Core Storytelling Principles
+        
+        **Narrative Style:**
+        - Third-person narration with warm, engaging tone
+        - Rhythmic, expressive language suitable for read-aloud
+        - Natural vocabulary expansion through context clues
+        - Show character growth through actions, not exposition
+        
+        **Content Guidelines:**
+        - Maintain G-rated, universally appropriate content
+        - Focus on positive problem-solving and collaboration
+        - Present challenges as learning opportunities
+        - Include gentle humor and wonder without scary elements
+        
+        **Strict Content Restrictions:**
+        - NO violence, injury, death, or physical harm to any character
+        - NO frightening elements (darkness, monsters, being lost or abandoned)
+        - NO conflict resolution through aggression or punishment
+        - NO profanity, inappropriate language, or adult themes
+        - NO religious references or specific denominational content
+        - NO stereotypes or culturally insensitive portrayals
+        
+        **Educational Integration:**
+        - Embed target vocabulary naturally in multiple contexts
+        - Demonstrate soft skills through character decisions
+        - Represent cultural traditions authentically
+        - End with subtle invitation for reflection
+        
+        ## Quality Standards
+        
+        **Vocabulary Development:**
+        - Use each target word minimum 2 times in different contexts
+        - Provide natural context clues for unfamiliar terms
+        - Balance familiar and new vocabulary appropriately
+        
+        **Skill Demonstration:**
+        - Show soft skills through pivotal character actions
+        - Make skill application feel natural to the story
+        - Avoid explicit skill naming or forced teaching moments
+        
+        **Cultural Authenticity:**
+        - Research and respect cultural storytelling traditions
+        - Include authentic details that enhance rather than stereotype
+        - Balance cultural specificity with universal themes
+        
+        ## Output Requirements
+        - Deliver complete story in flowing narrative prose
+        - No structural labels, headers, or visible story mechanics
+        - Maintain consistent tone and pacing throughout
+        - Ensure logical character motivation and growth
+        - Create satisfying resolution that feels earned
+        
+        ## Example Opening Style
+        *"In a village where morning mist danced between ancient olive trees, young Aria discovered that the most ordinary stones could hold extraordinary secrets. As she carefully examined each smooth pebble by the fountain, her grandmother's words echoed in her mind: 'Patient eyes see what hurried ones miss.'"*
+        
+        **Task**: Create an educational fairy tale incorporating specified vocabulary, cultural tradition, and soft skills while maintaining engaging storytelling that captivates young listeners.
+    """
 
-    **ОБЯЗАТЕЛЬНАЯ СТРУКТУРА СКАЗКИ:**
-    Экспозиция (10-15%) → Завязка (5-10%) → Развитие (50-70%) → Кульминация (10-15%) → Развязка (5-10%)
-
-    **КЛЮЧЕВЫЕ ПРИНЦИПЫ:**
-    - Повествование от третьего лица
-    - Исключи тревожные или пугающие сцены (потеря, одиночество, болезнь, увечье, конфликты, разрушения)
-    - Никаких религиозных упоминаний
-    - Возрастной словарь с естественными пояснениями незнакомых слов
-    - Ритмичный, выразительный язык для чтения вслух
-    - Тёплый, поддерживающий, слегка волшебный тон
-    - Показывай навыки через действия, а не прямые заявления
-    - "Безопасная симуляция" — ошибки как возможности для обучения
-    - Финал с мягким приглашением к размышлению
-
-    **КОНТРОЛЬ КАЧЕСТВА:**
-    - Каждое целевое слово используется минимум 2 раза в разных контекстах
-    - Софт-скиллы демонстрируются через решающие действия в кульминации
-    - Логичный переход между этапами сюжета
-    - Действия героев соответствуют их мотивации и росту
-    - Аутентичное представление культурной традиции
-    - Содержание категории G (для всех возрастов)
-
-    **ЗАПРЕТЫ:**
-    - Строго запрещено использовать служебные обозначения этапов сюжета в финальном тексте
-    - Не упоминай целевые софт-скиллы в явном виде
-    - Не вставляй заголовки, списки или маркировки частей сюжета
-    - Не используй механические определения или словари"""
-
-    user_message = f"""Сочини сказку для вслухового чтения по следующим параметрам:
-
-    **ПАРАМЕТРЫ СКАЗКИ:**
-    - Язык: {language}
-    - Пол главного героя: {gender}
-    - Возраст ребёнка: {age_text}
-    - Культурная традиция: {data.ethnography_choice} (учитывай мотивы, архетипы, персонажей, метафоры и моральные уроки традиции)
-    - Длительность: {data.story_duration_minutes} минут (от {word_range['min']} до {word_range['max']} символов)
-    - Интересы ребёнка: {", ".join(data.subcategories)}
-    - Слова для запоминания: {", ".join(data.target_words)} (встрой органично в текст, используй минимум 2 раза каждое, поясняй незнакомые через действия или диалоги)
-    - Целевые софт-скиллы: {data.soft_skills} (развивай через сюжетные ситуации, диалоги и действия персонажей)
-
-    **ДЕТАЛИЗАЦИЯ СТРУКТУРЫ:**
-
-    Экспозиция — начало сказки с базовыми сведениями о мире истории: где, когда, кто главный герой, его обстоятельства, черты характера, обстановка. Создай "почву" для читателя, задай тон и атмосферу. Ответь на вопросы: кто? где? когда? Введи ключевых героев, намекни на их качества. Используй яркие описания мира, короткие бытовые сцены. Не перегружай фактами — создай живой мир и оставь интерес.
-
-    Завязка — момент появления события, запускающего изменения. "Первый толчок" к действию, причина изменения спокойного мира. Чёткий переход от спокойствия к действию, первый конфликт или вызов. Сформулируй главные вопросы истории: удастся ли герою справиться? Какая цель перед ним? Покажи, что герой должен действовать иначе.
-
-    Развитие — самая большая часть. Серия событий, показывающих ответ героя на вызов: пробует пути, ошибается, учится, взаимодействует с персонажами, сталкивается с трудностями, продвигается к цели. Углубляй характеры, показывай изменения героев. Создай динамику с нарастающим напряжением. Действия героя должны логично вытекать из характера.
-
-    Кульминация — вершина напряжения. Наибольший вызов, критическая ситуация, сильнейший противник. Здесь решается, сможет ли герой преодолеть препятствие и достичь цели. Раскрой главную интригу. Герой использует всё изученное или делает выбор, показывающий рост. Ключевой софтскилл проверяется в действии.
-
-    Развязка — финал, показывающий изменения после кульминации. Судьбы героев понятны, конфликт исчерпан. Ответь на вопросы: что стало с героем? Чему научился? Что с миром? Сделай ясной, светлой и доброй. Содержи скрытый вопрос — приглашение применить опыт в жизни.
-
-    Создай цельную художественную историю, которая звучит естественно при чтении вслух с теплотой и выражением. Сказка должна быть волшебной и увлекательной, тонко развивая целевые софт-скиллы и словарный запас."""
+    user_message = f"""
+        Create a fairy tale for read-aloud narration based on the following parameters:
+        
+        STORY PARAMETERS:       
+            Language: {language}
+            Main character gender: {gender}
+            Child's age: {age_text}
+            Cultural tradition: {data.ethnography_choice} (incorporate motifs, archetypes, characters, metaphors, and moral lessons from this tradition)
+            Duration: {data.story_duration_minutes} minutes (from {word_range['min']} to {word_range['max']} characters)
+            Child's interests: {", ".join(data.subcategories)}
+            Target vocabulary: {", ".join(data.target_words)} (integrate naturally into text, use each word minimum 2 times, explain unfamiliar words through actions or dialogue)
+            Target soft skills: {data.soft_skills} (develop through plot situations, dialogue, and character actions)
+            
+        DETAILED STRUCTURE:
+            Exposition — Story opening with basic information about the story world: where, when, who the main character is, their circumstances, character traits, setting. Create "foundation" for the reader, establish tone and atmosphere. Answer: who? where? when? Introduce key characters, hint at their qualities. Use vivid world descriptions, brief everyday scenes. Don't overload with facts — create a living world while maintaining interest.
+            Inciting Incident — Moment when an event appears that triggers change. "First push" toward action, reason for disrupting the peaceful world. Clear transition from calm to action, first conflict or challenge. Formulate the story's main questions: will the hero succeed? What goal lies before them? Show that the hero must act differently.
+            Rising Action — Largest section. Series of events showing the hero's response to the challenge: tries different approaches, makes mistakes, learns, interacts with characters, faces difficulties, progresses toward the goal. Deepen characters, show character changes. Create dynamics with increasing tension. Hero's actions must logically flow from their character.
+            Climax — Peak of tension. Greatest challenge, critical situation, strongest opponent. Here it's decided whether the hero can overcome the obstacle and reach their goal. Reveal the main intrigue. Hero uses everything learned or makes a choice showing growth. Key soft skill is tested in action.
+            Resolution — Ending showing changes after the climax. Characters' fates are clear, conflict is resolved. Answer: what became of the hero? What did they learn? What about the world? Make it clear, bright, and kind. Include a hidden question — invitation to apply the experience in life.
+            Create a complete artistic story that sounds natural when read aloud with warmth and expression. The tale should be magical and engaging, subtly developing target soft skills and vocabulary.
+        
+        OUTPUT GUIDELINES:        
+            Write in flowing narrative prose without structural labels
+            Use warm, expressive language suitable for read-aloud
+            Maintain consistent tone and cultural authenticity
+            Balance familiar and new vocabulary naturally
+            End with gentle invitation for reflection
+    """
 
     return {
         "system": system_message,

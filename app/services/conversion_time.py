@@ -1,6 +1,5 @@
 import math
 
-
 def seconds_to_hms(seconds):
     """
     Конвертирует секунды в формат ЧЧ:ММ:СС
@@ -28,4 +27,9 @@ def seconds_to_minutes(seconds):
     Returns:
         int: количество минут
     """
+    remainder_seconds = seconds % 60
+
+    if remainder_seconds < 30:
+        return math.floor(seconds / 60)
+
     return math.ceil(seconds / 60)

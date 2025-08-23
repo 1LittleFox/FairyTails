@@ -6,7 +6,9 @@ from dotenv import load_dotenv
 # Загружаем переменные из .env файла
 load_dotenv()
 
-sempl_text = """Пропуск, Здравствуйте, это тест studio голоса для TTS от Гугл"""
+sempl_text = """
+     <speak> <p> <s>In a little village nestled between whispering birch forests and fields of golden wheat, lived a quiet boy named Misha.</s> <break time="300ms"/> <s>His cottage had a thatched roof that wore a crown of moss, and his best friend was a fluffy ginger cat named Zhivchik, which means "lively one."</s> <break time="400ms"/> <s>Every evening, Misha's grandmother would stoke the warm, crackling fire in their big clay stove, and the whole house would glow with a cozy light.</s> <break time="500ms"/> <s>Zhivchik would curl his tail neatly around his paws and watch the dancing flames, his eyes two little moons in the firelight.</s> </p> <break time="600ms"/></speak>
+"""
 
 
 def check_network_connectivity():
@@ -63,16 +65,16 @@ async def test_google_cloud_tts():
         print(f"📝 Озвучиваем текст: '{sempl_text[:50]}...'")
 
         # Настраиваем параметры синтеза
-        synthesis_input = texttospeech.SynthesisInput(text=sempl_text)
+        synthesis_input = texttospeech.SynthesisInput(ssml=sempl_text)
 
-        name="ru-RU-Chirp3-HD-Aoede"
+        name="fr-FR-Studio-D"
 
         # Выбираем русский голос
         # Доступные русские голоса: ru-RU-Standard-A, ru-RU-Standard-B, ru-RU-Standard-C, ru-RU-Standard-D
         voice = texttospeech.VoiceSelectionParams(
-            language_code="ru-RU",
+            language_code="fr-FR",
             name=name,  # Женский голос
-            ssml_gender=texttospeech.SsmlVoiceGender.FEMALE
+            ssml_gender=texttospeech.SsmlVoiceGender.MALE
         )
 
         # Настройки аудио
@@ -96,7 +98,7 @@ async def test_google_cloud_tts():
         )
 
         # Сохраняем аудио файл
-        output_filename = f"google_tts_{name}_2.mp3"
+        output_filename = f"google_tts_{name}_MALE.mp3"
         with open(output_filename, "wb") as f:
             f.write(response.audio_content)
 

@@ -82,7 +82,7 @@ async def simple_yandex_tts_test():
     data = {
         'ssml': sample_text,
         'lang': 'ru-RU',
-        'voice': 'zahar',
+        'voice': 'ermil',
         'emotion': 'neutral',
         'speed': 1.0,
         'format': 'mp3',
@@ -128,7 +128,7 @@ async def simple_yandex_tts_test():
                         print("✅ Запрос успешен! Сохраняем аудио...")
 
                         audio_content = await response.read()
-                        output_filename = "yandex_tts_test_zahar.mp3"
+                        output_filename = f"yandex_tts_test_{data['voice']}_{data['emotion']}.mp3"
 
                         with open(output_filename, "wb") as f:
                             f.write(audio_content)

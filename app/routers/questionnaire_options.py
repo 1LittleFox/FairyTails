@@ -67,7 +67,7 @@ async def get_options(lang: Optional[str] = Query('en', description="Language co
         categories = []
         category_keys = [
             "animals", "transport", "magic", "princesses", "superheroes",
-            "astronauts", "mythical_creatures", "ordinary_people", "other"
+            "astronauts", "mythical_creatures", "ordinary_people"
         ]
 
         for i, key in enumerate(category_keys, 1):
@@ -91,10 +91,8 @@ async def get_options(lang: Optional[str] = Query('en', description="Language co
                 {"id": 203, "name": translate_with_error_handling("interests.subcategories.planes", validated_lang)}
             ],
             "3": [  # Магия
-                {"id": 301,
-                 "name": translate_with_error_handling("interests.subcategories.sorceresses", validated_lang)},
-                {"id": 302, "name": translate_with_error_handling("interests.subcategories.fairies", validated_lang)},
-                {"id": 303, "name": translate_with_error_handling("interests.subcategories.planes", validated_lang)}
+                {"id": 301, "name": translate_with_error_handling("interests.subcategories.sorceresses", validated_lang)},
+                {"id": 302, "name": translate_with_error_handling("interests.subcategories.fairies", validated_lang)}
                 # Похоже на ошибку в оригинале
             ],
             "4": [  # Принцессы
