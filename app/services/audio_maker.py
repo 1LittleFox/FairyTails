@@ -8,103 +8,13 @@ import boto3
 import aiohttp
 import wave
 
-from openai import AsyncOpenAI
 from datetime import datetime
 from dotenv import load_dotenv
 from google.cloud import texttospeech_v1 as texttospeech, storage
 from google.oauth2 import service_account
 from mutagen.mp3 import MP3
 
-
 load_dotenv()
-
-
-class SimpleAudioMaker:
-    """Простой класс для создания аудио и загрузки в S3"""
-
-    def __init__(self):
-
-        self.openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        self.selectel_domain=os.getenv("SELECTEL_DOMAIN")
-        # Настраиваем Selectel S3
-        self.s3_client = boto3.client(
-            's3',
-            endpoint_url='https://s3.ru-1.storage.selcloud.ru',
-            aws_access_key_id=os.getenv("SELECTEL_ACCESS_KEY"),
-            aws_secret_access_key=os.getenv("SELECTEL_SECRET_KEY"),
-            region_name='ru-1',
-            config=boto3.session.Config(
-                s3={'addressing_style': 'virtual'}
-            )
-        )
-
-        self.bucket_name = os.getenv("SELECTEL_BUCKET_NAME")
-
-
-    async def create_audio(self, text: str) -> tuple[bytes, float]:
-        """ШАГ 1: Создаем аудио из текста асинхронно"""
-
-        response = await self.openai_client.audio.speech.create(
-            model="tts-1-hd",  # Модель (можно tts-1-hd для лучшего качества)
-            voice="alloy",  # Голос (alloy, echo, fable, onyx, nova, shimmer)
-            input=text
-        )
-
-        audio_data = response.content
-
-        # Получаем длительность аудио
-        try:
-            audio_file = io.BytesIO(audio_data)
-            audio = MP3(audio_file)
-            duration = audio.info.length  # в секундах
-        except Exception as e:
-            print(f"Не удалось получить длительность аудио: {e}")
-            duration = 0.0
-
-        return audio_data, duration
-
-    def upload_to_s3(self, audio_data: bytes) -> str:
-        """ШАГ 2: Загружаем аудио в S3"""
-
-        # Преобразуем user_id в строку (для UUID и обычных строк)
-
-        # Создаем уникальное имя файла
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        unique_id = str(uuid.uuid4())[:8]
-        filename = f"audio/{timestamp}_{unique_id}.mp3"
-
-        # Загружаем в S3
-        self.s3_client.put_object(
-            Bucket=self.bucket_name,
-            Key=filename,
-            Body=audio_data,
-            ContentType='audio/mpeg',
-            ACL='public-read'
-        )
-
-        # Формируем URL (vHosted формат для вашего контейнера)
-        file_url = f"{self.selectel_domain}/{filename}"
-
-        return file_url
-
-    async def make_story_audio(self, story_text: str) -> dict:
-        """ГЛАВНАЯ ФУНКЦИЯ: Текст → Аудио → S3 → URL"""
-
-        try:
-            # Шаг 1: Текст → Аудио (теперь асинхронно)
-            audio_data, duration = await self.create_audio(story_text)
-
-            # Шаг 2: Аудио → S3
-            audio_url = self.upload_to_s3(audio_data)
-
-            return {
-                'url': audio_url,
-                'duration': duration  # длительность в секундах
-            }
-
-        except Exception as e:
-            raise Exception(f"Не удалось создать аудио: {e}")
-
 
 class YandexSpeechKitAudioMaker:
     """Класс для создания аудио через Yandex SpeechKit и загрузки в S3"""
@@ -208,8 +118,6 @@ class YandexSpeechKitAudioMaker:
             print(f"Чанк {i + 1}: {len(wrapped_chunk)} символов")
 
         return wrapped_chunks
-
-
 
     async def create_audio_chunk(self, ssml_chunk) -> tuple[bytes, float]:
         """ШАГ 1: Создаем аудио из текста через Yandex SpeechKit"""
@@ -400,8 +308,87 @@ class GoogleCloudAudioMaker:
 
         self.bucket_name = os.getenv("SELECTEL_BUCKET_NAME")
 
+        self.max_chunk_size = 10000
 
-    async def create_long_audio(self, text: str,
+    def remove_outer_speak_tags(self, ssml_text: str) -> str:
+        """
+        ШАГ 2: Удаляем внешние <speak> и </speak> теги
+        """
+        # Удаляем внешние speak теги, сохраняя все внутреннее содержимое
+        ssml_text = ssml_text.strip()
+
+        # Удаляем открывающий тег <speak> (может содержать атрибуты)
+        ssml_text = re.sub(r'^\s*<speak>', '', ssml_text, flags=re.IGNORECASE)
+
+        # Удаляем закрывающий тег </speak>
+        ssml_text = re.sub(r'</speak>\s*$', '', ssml_text, flags=re.IGNORECASE)
+
+        return ssml_text.strip()
+
+    def split_by_p_tags(self, ssml_content: str) -> list[str]:
+        """
+        ШАГ 3: Разделяем контент на чанки по <p> тегам
+        """
+        chunks = []
+
+        # Находим все <p>...</p> блоки
+        p_pattern = r'<p[^>]*>.*?</p>'
+        p_blocks = re.findall(p_pattern, ssml_content, re.DOTALL | re.IGNORECASE)
+
+        if not p_blocks:
+            # Если нет <p> тегов, возвращаем весь контент как один чанк
+            print("Предупреждение: <p> теги не найдены, используется весь контент как один чанк")
+            return [ssml_content]
+
+        print(f"Найдено {len(p_blocks)} абзацев (<p> тегов)")
+
+        current_chunk = ""
+
+        for i, p_block in enumerate(p_blocks):
+            # Проверяем, поместится ли текущий блок в чанк
+            test_chunk = current_chunk + p_block
+            test_chunk_with_speak = f"<speak>{test_chunk}</speak>"
+
+            if len(test_chunk_with_speak) <= self.max_chunk_size:
+                # Блок помещается, добавляем его к текущему чанку
+                current_chunk = test_chunk
+            else:
+                # Блок не помещается
+                if current_chunk:
+                    # Сохраняем накопленный чанк
+                    chunks.append(current_chunk)
+                    current_chunk = p_block
+                else:
+                    # Текущий блок слишком большой даже сам по себе
+                    print(f"Предупреждение: абзац {i + 1} слишком длинный ({len(p_block)} символов)")
+                    # Можно добавить дополнительную логику разделения длинного абзаца
+                    chunks.append(p_block)
+
+        # Добавляем последний чанк, если он не пустой
+        if current_chunk:
+            chunks.append(current_chunk)
+
+        return chunks
+
+    def add_speak_tags_to_chunks(self, chunks: list[str]) -> list[str]:
+        """
+        ШАГ 4: Добавляем <speak></speak> теги к каждому чанку
+
+        Args:
+            chunks: Список чанков без внешних speak тегов
+        """
+        wrapped_chunks = []
+
+        for i, chunk in enumerate(chunks):
+            # Формируем тег с атрибутами
+            wrapped_chunk = f"<speak>{chunk}</speak>"
+            wrapped_chunks.append(wrapped_chunk)
+
+            print(f"Чанк {i + 1}: {len(wrapped_chunk)} символов")
+
+        return wrapped_chunks
+
+    async def create_audio_chunk(self, text: str,
                                 voice_name: str,
                                 language_code: str) -> tuple[bytes, float]:
         """ШАГ 1: Создаем длинное аудио из текста через Google Cloud TTS Long Audio Synthesis"""
@@ -472,6 +459,69 @@ class GoogleCloudAudioMaker:
 
         return audio_data, duration
 
+    @staticmethod
+    def concatenate_audio_files(audio_chunks: list[bytes]) -> bytes:
+        """
+        ШАГ 6: Соединяем аудио файлы
+        """
+        print(len(audio_chunks))
+        if len(audio_chunks) == 1:
+            return audio_chunks[0]
+
+        return b''.join(audio_chunks)
+
+    async def create_audio_from_ssml(self, ssml_text: str,
+                                     voice_name: str,
+                                     language_code: str) -> tuple[bytes, float]:
+        """
+        ОСНОВНОЙ МЕТОД: Реализация вашего алгоритма
+        1. Разметка уже есть (ssml_text)
+        2. Удаляем внешние <speak></speak>
+        3. Разделяем по <p> тегам
+        4. Добавляем <speak></speak> к каждому чанку
+        5. Озвучиваем каждый чанк
+        6. Соединяем результаты
+        """
+        print(f"Начинаем обработку SSML текста длиной {len(ssml_text)} символов")
+
+        # ШАГ 2: Удаляем внешние <speak></speak> теги
+        content_without_speak = self.remove_outer_speak_tags(ssml_text)
+        print(f"Контент без внешних speak тегов: {len(content_without_speak)} символов")
+
+        # ШАГ 3: Разделяем на чанки по <p> тегам
+        chunks = self.split_by_p_tags(content_without_speak)
+        print(f"Получено чанков: {len(chunks)}")
+
+        # Если все помещается в один чанк, используем исходный SSML
+        if len(chunks) == 1 and len(ssml_text) <= self.max_chunk_size:
+            print("Текст помещается в один чанк, используем как есть")
+            return await self.create_audio_chunk(ssml_text, voice_name, language_code)
+
+        # ШАГ 4: Добавляем <speak></speak> к каждому чанку
+        wrapped_chunks = self.add_speak_tags_to_chunks(chunks)
+
+        # ШАГ 5: Озвучиваем каждый чанк
+        audio_chunks = []
+        total_duration = 0.0
+
+        for i, chunk in enumerate(wrapped_chunks):
+            try:
+                print(f"Озвучиваем чанк {i + 1}/{len(wrapped_chunks)}")
+                audio_data, duration = await self.create_audio_chunk(chunk, voice_name, language_code)
+                audio_chunks.append(audio_data)
+                total_duration += duration
+                print(f"  Длительность чанка: {duration:.2f} секунд")
+
+            except Exception as e:
+                raise Exception(f"Ошибка при озвучке чанка {i + 1}: {e}")
+
+        # ШАГ 6: Соединяем аудио
+        print("Соединяем аудио чанки...")
+        combined_audio = self.concatenate_audio_files(audio_chunks)
+
+        print(f"Общая длительность: {total_duration:.2f} секунд")
+        return combined_audio, total_duration
+
     def upload_to_s3(self, audio_data: bytes) -> str:
         """ШАГ 2: Загружаем аудио в S3"""
 
@@ -501,7 +551,7 @@ class GoogleCloudAudioMaker:
 
         try:
             # Шаг 1: Длинный текст → Аудио через Google Cloud Long TTS
-            audio_data, duration = await self.create_long_audio(
+            audio_data, duration = await self.create_audio_from_ssml(
                 story_text,
                 voice_name=voice_name,
                 language_code=language_code

@@ -10,10 +10,9 @@ from sqlalchemy import func
 from sqlmodel import select
 
 from app.database import SessionDep
-from app.services.audio_maker import SimpleAudioMaker
 from app.services.prompt_continue import prompt_continue_builder
 from app.schemas import FollowUpQuestionnaire, StoryGenerationResponse
-from app.models import Story, User, Collection
+from app.models import Story, Collection
 from app.routers.generation import google_audio_maker, yandex_audio_maker
 from app.services.markup_prompt import create_markup_prompt_from_ru, create_markup_prompt_from_euro
 
