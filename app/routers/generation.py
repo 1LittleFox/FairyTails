@@ -73,14 +73,13 @@ async def generate_tale_and_check_user(
 
             tale_text = tale_data['tale']
 
-            elapsed = time.time() - start_time
-            print(f"Генерация закончена: {elapsed:.1f} сек")
+            tale_title = " ".join(tale_text.split()[:2]) + "..."
 
-            if len(tale_text) < prompt["awg"]:
+            if len(tale_text) < prompt['awg']:
                 print("Начинаем увеличение сказки")
                 start_time = time.time()
                 expand_prompt = f"""
-                    Расширь эту сказку до {prompt["awg"]} символов.
+                    Расширь эту сказку до {prompt['awg']} символов.
                     Добавь смысловой нагрузки и связанных со сказкой деталей:
 
                     {tale_text}
@@ -100,8 +99,6 @@ async def generate_tale_and_check_user(
 
                 tale_data = json.loads(response.choices[0].message.content)
                 tale_text = tale_data['tale']
-
-            tale_title = " ".join(tale_text.split()[:2]) + "..."
 
         except Exception as e:
             raise HTTPException(
@@ -124,7 +121,7 @@ async def generate_tale_and_check_user(
                 markup_prompt = create_markup_prompt_from_ru(tale_text)
 
                 response = await client.chat.completions.create(
-                    model=OPENAI_MODEL_FOR_MARKUP,
+                    model=OPENAI_MODEL,
                     response_format={"type": "json_object"},
                     messages=[
                         {"role": "system", "content": f"{markup_prompt['system_prompt_markup']}. Всегда возвращай ответ в формате JSON."},
@@ -160,8 +157,7 @@ async def generate_tale_and_check_user(
                 )
 
             elapsed = time.time() - start_time
-            print(f"Озвучка выполнена успешно: {elapsed:.1f} сек"
-                  f"{markup_tale_text}")
+            print(f"Озвучка выполнена успешно: {elapsed:.1f} сек")
 
         else:
             print(f"Приступаем к разметке для GC")
@@ -172,7 +168,7 @@ async def generate_tale_and_check_user(
                 markup_prompt = create_markup_prompt_from_euro(tale_text)
 
                 response = await client.chat.completions.create(
-                    model=OPENAI_MODEL,
+                    model=OPENAI_MODEL_FOR_MARKUP,
                     response_format={"type": "json_object"},
                     messages=[
                         {"role": "system", "content": f"{markup_prompt['system_prompt_markup']}. Always return a response in JSON format."},
@@ -189,7 +185,6 @@ async def generate_tale_and_check_user(
                 markup_tale_text = markup_tale_data['markup_tale']
 
                 markup_tale_text = str(markup_tale_text)
-                print(type(markup_tale_text))
 
             except Exception as e:
                 raise HTTPException(
@@ -197,13 +192,13 @@ async def generate_tale_and_check_user(
                     detail=f"Ошибка разметки сказки: {str(e)}"
                 )
             elapsed = time.time() - start_time
-            print(f"Разметка выполнена успешно: {elapsed:.1f} сек"
-                  f"{markup_tale_text}")
+            print(f"Разметка выполнена успешно: {elapsed:.1f} сек")
 
             if data.language == "FRA":
                 voice_name = "fr-FR-Studio-A"
                 language_code = "fr-FR"
                 print(f"Начинаем озвучку")
+                start_time = time.time()
                 try:
 
                     audio_url = await google_audio_maker.make_story_audio(
@@ -217,11 +212,13 @@ async def generate_tale_and_check_user(
                         status_code=500,
                         detail=f"Ошибка озвучивания сказки: {str(e)}"
                     )
-                print(f"Заканчиваем озвучку")
+                elapsed = time.time() - start_time
+                print(f"Озвучка завершена: {elapsed:.1f} сек")
             else:
                 voice_name = "en-US-Studio-O"
                 language_code = "en-US"
                 print(f"Начинаем озвучку")
+                start_time = time.time()
                 try:
 
                     audio_url = await google_audio_maker.make_story_audio(
@@ -235,7 +232,9 @@ async def generate_tale_and_check_user(
                         status_code=500,
                         detail=f"Ошибка озвучивания сказки: {str(e)}"
                     )
-                print(f"Заканчиваем озвучку")
+                elapsed = time.time() - start_time
+                print(f"Озвучка завершена: {elapsed:.1f} сек")
+
 
         new_collection = Collection(
             user_id=user_id,

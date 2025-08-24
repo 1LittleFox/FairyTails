@@ -1,5 +1,6 @@
 import json
 import os
+import time
 from datetime import datetime, UTC
 
 from dotenv import load_dotenv
@@ -20,7 +21,8 @@ load_dotenv()
 router = APIRouter()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = "gpt-4-turbo"
+OPENAI_MODEL = "gpt-5"
+OPENAI_MODEL_FOR_MARKUP = "gpt-4o"
 
 
 @router.post("/stories/{story_id}/make_continue")
@@ -29,6 +31,8 @@ async def make_continue_for_story(
         story_id: str,
         data: FollowUpQuestionnaire
 ):
+    start_time = time.time()
+
     try:
         client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
@@ -61,16 +65,13 @@ async def make_continue_for_story(
             model=OPENAI_MODEL,
             response_format={"type": "json_object"},
             messages=[
-                {"role": "system", "content": f"{prompt_for_continuation["system"]}. Всегда возвращай ответ в формате JSON."},
+                {"role": "system", "content": f"{prompt_for_continuation['system']}. Всегда возвращай ответ в формате JSON."},
                 {"role": "user",
-                 "content": f"{prompt_for_continuation["user"]}\n\nВерни ответ в формате JSON с полями: 'tale' (текст сказки), "
+                 "content": f"{prompt_for_continuation['user']}\n\nВерни ответ в формате JSON с полями: 'tale' (текст сказки), "
                                                 f"'word_count' (количество слов), 'target_words_usage' (словарь использования целевых слов)."}
             ],
-            temperature=0.3,
-            max_tokens=4096,
-            top_p=0.95,
-            frequency_penalty=0.5,
-            presence_penalty=0.3
+            temperature=1,
+            max_completion_tokens=16384
         )
 
         # Парсим JSON ответ
@@ -86,16 +87,6 @@ async def make_continue_for_story(
             detail=f"Ошибка генерации сказки: {str(e)}"
         )
 
-    # try:
-    #
-    #     audio_url = await audio_maker.make_story_audio(tale_text)
-    #
-    # except Exception as e:
-    #     raise HTTPException(
-    #         status_code=500,
-    #         detail=f"Ошибка озвучивания сказки: {str(e)}"
-    #     )
-
     if basis_for_continuation.language == "РУС":
         try:
             client = AsyncOpenAI(api_key=OPENAI_API_KEY)
@@ -103,16 +94,17 @@ async def make_continue_for_story(
             markup_prompt = create_markup_prompt_from_ru(tale_text)
 
             response = await client.chat.completions.create(
-                model=OPENAI_MODEL,
+                model=OPENAI_MODEL_FOR_MARKUP,
                 response_format={"type": "json_object"},
                 messages=[
                     {"role": "system",
-                     "content": f"{markup_prompt["system_prompt_markup"]}. Всегда возвращай ответ в формате JSON."},
+                     "content": f"{markup_prompt['system_prompt_markup']}. Всегда возвращай ответ в формате JSON."},
                     {"role": "user",
-                     "content": f"{markup_prompt["user_prompt_markup"]}\n\nВерни ответ в формате JSON с полями: 'markup_tale' (текст сказки), "
+                     "content": f"{markup_prompt['user_prompt_markup']}\n\nВерни ответ в формате JSON с полями: 'markup_tale' (текст сказки), "
                                 f"'word_count' (количество слов), 'target_words_usage' (словарь использования целевых слов)."}
                 ],
-                temperature=0.3
+                temperature=1,
+                max_completion_tokens=16384
             )
 
             # Парсим JSON ответ
@@ -127,7 +119,6 @@ async def make_continue_for_story(
             )
 
         try:
-
             audio_url = await yandex_audio_maker.make_story_audio(markup_tale_text)
 
         except Exception as e:
@@ -141,16 +132,16 @@ async def make_continue_for_story(
             client = AsyncOpenAI(api_key=OPENAI_API_KEY)
             markup_prompt = create_markup_prompt_from_euro(tale_text)
             response = await client.chat.completions.create(
-                model=OPENAI_MODEL,
+                model=OPENAI_MODEL_FOR_MARKUP,
                 response_format={"type": "json_object"},
                 messages=[
                     {"role": "system",
-                     "content": f"{markup_prompt["system_prompt_markup"]}. Always return a response in JSON format.."},
+                     "content": f"{markup_prompt['system_prompt_markup']}. Always return a response in JSON format.."},
                     {"role": "user",
-                     "content": f"{markup_prompt["user_prompt_markup"]}\n\nReturn the response in JSON format with the fields: 'markup_tale' (text of the fairy tale), "
+                     "content": f"{markup_prompt['user_prompt_markup']}\n\nReturn the response in JSON format with the fields: 'markup_tale' (text of the fairy tale), "
                                 f"'word_count' (number of words), 'target_words_usage' (dictionary of the use of target words)."}
                 ],
-                temperature=0.3
+                temperature=0.9
             )
 
             # Парсим JSON ответ
@@ -239,6 +230,9 @@ async def make_continue_for_story(
 
     await session.commit()
     await session.refresh(collection)
+
+    elapsed = time.time() - start_time
+    print(f"Конец ендпоинта. Время создания: {elapsed} сек")
 
     return StoryGenerationResponse(
         user_id=basis_for_continuation.user_id,
