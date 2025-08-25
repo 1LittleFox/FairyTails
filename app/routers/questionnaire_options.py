@@ -3,6 +3,8 @@ import i18n
 import os
 from typing import Optional
 
+from markupsafe import soft_str
+
 # Настройка i18n
 i18n.set('locale', 'en')  # английский по умолчанию
 i18n.set('fallback', 'en')
@@ -50,8 +52,9 @@ async def get_options(lang: Optional[str] = Query('en', description="Language co
             "greek", "persian", "indian", "chinese", "japanese", "jewish"
         ]
 
-        for key in ethnography_keys:
+        for i, key in enumerate(ethnography_keys, 1):
             ethnography_data.append({
+                "id": i,
                 "name": translate_with_error_handling(f"ethnography.{key}.name", validated_lang),
                 "description": translate_with_error_handling(f"ethnography.{key}.description", validated_lang)
             })
@@ -131,6 +134,7 @@ async def get_options(lang: Optional[str] = Query('en', description="Language co
         }
 
         # Переводим soft skills
+        soft_skills = []
         soft_skills_keys = [
             "self_preservation", "positivity", "empathy", "creativity", "curiosity",
             "courage", "stress_management", "self_motivation", "productivity",
@@ -138,9 +142,11 @@ async def get_options(lang: Optional[str] = Query('en', description="Language co
             "leadership", "confidence", "persuasion", "team_spirit", "flexibility", "etiquette"
         ]
 
-        soft_skills = []
-        for key in soft_skills_keys:
-            soft_skills.append(translate_with_error_handling(f"soft_skills.{key}", validated_lang))
+        for i, key in enumerate(soft_skills_keys, 1):
+            soft_skills.append({
+                "id": i,
+                "name": translate_with_error_handling(f"soft_skills.{key}", validated_lang)
+            })
 
         # Переводим языки
         languages = [
