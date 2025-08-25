@@ -2,66 +2,9 @@ from app.schemas import Questionnaire
 
 # Расширенная таблица соответствия длительности и количества слов
 DURATION_TO_CHARS = {
-    1: {"min": 600, "max": 700},
-    2: {"min": 1200, "max": 1400},
-    3: {"min": 1800, "max": 2100},
-    4: {"min": 2400, "max": 2800},
-    5: {"min": 3000, "max": 3500},
-    6: {"min": 3600, "max": 4200},
-    7: {"min": 4200, "max": 4900},
-    8: {"min": 4800, "max": 5600},
-    9: {"min": 5400, "max": 6300},
-    10: {"min": 6000, "max": 7000},
-    11: {"min": 6600, "max": 7700},
-    12: {"min": 7200, "max": 8400},
-    13: {"min": 7800, "max": 9100},
-    14: {"min": 8400, "max": 9800},
-    15: {"min": 9000, "max": 10500},
-    16: {"min": 9600, "max": 11200},
-    17: {"min": 10200, "max": 11900},
-    18: {"min": 10800, "max": 12600},
-    19: {"min": 11400, "max": 13300},
-    20: {"min": 12000, "max": 14000},
-    21: {"min": 12600, "max": 14700},
-    22: {"min": 13200, "max": 15400},
-    23: {"min": 13800, "max": 16100},
-    24: {"min": 14400, "max": 16800},
-    25: {"min": 15000, "max": 17500},
-    26: {"min": 15600, "max": 18200},
-    27: {"min": 16200, "max": 18900},
-    28: {"min": 16800, "max": 19600},
-    29: {"min": 17400, "max": 20300},
-    30: {"min": 18000, "max": 21000},
-    31: {"min": 18600, "max": 21700},
-    32: {"min": 19200, "max": 22400},
-    33: {"min": 19800, "max": 23100},
-    34: {"min": 20400, "max": 23800},
-    35: {"min": 21000, "max": 24500},
-    36: {"min": 21600, "max": 25200},
-    37: {"min": 22200, "max": 25900},
-    38: {"min": 22800, "max": 26600},
-    39: {"min": 23400, "max": 27300},
-    40: {"min": 24000, "max": 28000},
-    41: {"min": 24600, "max": 28700},
-    42: {"min": 25200, "max": 29400},
-    43: {"min": 25800, "max": 30100},
-    44: {"min": 26400, "max": 30800},
-    45: {"min": 27000, "max": 31500},
-    46: {"min": 27600, "max": 32200},
-    47: {"min": 28200, "max": 32900},
-    48: {"min": 28800, "max": 33600},
-    49: {"min": 29400, "max": 34300},
-    50: {"min": 30000, "max": 35000},
-    51: {"min": 30600, "max": 35700},
-    52: {"min": 31200, "max": 36400},
-    53: {"min": 31800, "max": 37100},
-    54: {"min": 32400, "max": 37800},
-    55: {"min": 33000, "max": 38500},
-    56: {"min": 33600, "max": 39200},
-    57: {"min": 34200, "max": 39900},
-    58: {"min": 34800, "max": 40600},
-    59: {"min": 35400, "max": 41300},
-    60: {"min": 36000, "max": 42000},
+    3: {"min": 600, "max": 3500},
+    10: {"min": 3000, "max": 10500},
+    30: {"min": 9600, "max": 31500},
 }
 
 def prompt_user_builder(data: Questionnaire) -> dict:
@@ -71,9 +14,9 @@ def prompt_user_builder(data: Questionnaire) -> dict:
     )
 
     # Форматируем возраст
-    age_text = f"{data.age_years} лет"
+    age_text = f"{data.age_years} years"
     if data.age_months > 0:
-        age_text += f" {data.age_months} месяцев"
+        age_text += f" {data.age_months} months"
 
     # Форматируем гендер
     gender = {"M": "boy", "F": "girl"}.get(data.gender, "any gender")
@@ -169,10 +112,10 @@ def prompt_user_builder(data: Questionnaire) -> dict:
             Main character gender: {gender}
             Child's age: {age_text}
             Cultural tradition: {data.ethnography_choice} (incorporate motifs, archetypes, characters, metaphors, and moral lessons from this tradition)
-            Duration: {data.story_duration_minutes} minutes (from {word_range['min']} to {word_range['max']} characters)
+            Story length requirement: Write a story that takes approximately {data.story_duration_minutes} minutes to read. This should result in roughly {word_range['min']} to {word_range['max']} characters. Focus on meeting the reading time rather than exact character count.
             Child's interests: {", ".join(data.subcategories)}
             Target vocabulary: {", ".join(data.target_words)} (integrate naturally into text, use each word minimum 2 times, explain unfamiliar words through actions or dialogue)
-            Target soft skills: {data.soft_skills} (develop through plot situations, dialogue, and character actions)
+            Target soft skills: {", ".join(data.soft_skills)} (develop through plot situations, dialogue, and character actions)
             
         DETAILED STRUCTURE:
             Exposition — Story opening with basic information about the story world: where, when, who the main character is, their circumstances, character traits, setting. Create "foundation" for the reader, establish tone and atmosphere. Answer: who? where? when? Introduce key characters, hint at their qualities. Use vivid world descriptions, brief everyday scenes. Don't overload with facts — create a living world while maintaining interest.

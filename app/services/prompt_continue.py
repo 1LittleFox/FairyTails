@@ -2,6 +2,12 @@ from typing import List
 
 from app.schemas import FollowUpQuestionnaire
 
+DURATION_TO_CHARS = {
+    3: {"min": 600, "max": 3500},
+    10: {"min": 3000, "max": 10500},
+    30: {"min": 9600, "max": 31500},
+}
+
 def prompt_continue_builder(
         data: FollowUpQuestionnaire,
         tale_text: str,
@@ -12,6 +18,11 @@ def prompt_continue_builder(
         ethnography_choice: str,
         interest: List[str]
 ) -> dict:
+    word_range = DURATION_TO_CHARS.get(
+        data.story_duration_minutes,
+        {"min": data.story_duration_minutes * 120, "max": data.story_duration_minutes * 138}
+    )
+
     system_message = """
     You are a storyteller who creates educational fairy tales for children, taking into account cultural traditions and pedagogical goals.
 
@@ -62,7 +73,7 @@ def prompt_continue_builder(
         2. Main character's gender: {gender}
         3. Child's age: {age_years} years and {age_months} months
         4. Cultural tradition: {ethnography_choice}. The tale must incorporate motifs, archetypes, typical characters, metaphors, moral lessons, heroes, metaphors, and plotlines characteristic of this cultural tradition (based on/considering the known corpus of fairy tale texts);
-        5. The fairy tale must be in the range from {data.story_duration_minutes}.
+        5. Story length requirement: Write a story that takes approximately {data.story_duration_minutes} minutes to read. This should result in roughly {word_range['min']} to {word_range['max']} characters. Focus on meeting the reading time rather than exact character count.
         6. Be sure to include the child's interests listed below: {interest}
         7. List of words and expressions to memorize: {", ".join(data.target_words)}. These words and expressions must be seamlessly integrated into the tale text. Use each given word at least 2 times in different contexts..
         8. Target soft skills: {data.soft_skills}. The tale should foster the development of the specified soft skills through plot situations, dialogues, and character actions.

@@ -56,6 +56,8 @@ async def generate_tale_and_check_user(
 
             prompt = prompt_user_builder(data)
 
+            print(prompt['user'])
+
             response = await client.chat.completions.create(
                 model=OPENAI_MODEL,
                 response_format={"type": "json_object"},

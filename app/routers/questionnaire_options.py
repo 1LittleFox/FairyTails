@@ -157,7 +157,7 @@ async def get_options(lang: Optional[str] = Query('en', description="Language co
                 "subcategories": subcategories
             },
             "soft_skills": soft_skills,
-            "languages": languages
+            "languages": languages,
         }
 
     except HTTPException:
