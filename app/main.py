@@ -1,4 +1,5 @@
 # main.py
+import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,12 +9,16 @@ from app.routers import (home, all_users,
                          questionnaire_options, delete_story, delete_collection, all_collection,
                          collections_detail, generation, creating_sequels, display_stories)
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
+    logger.info("Starting application...")
     setup_i18n()
     yield
+    logger.info("Shutting down application...")
     # Shutdown (если нужно что-то выполнить при завершении)
 
 app = FastAPI(lifespan=lifespan)

@@ -26,7 +26,7 @@ yandex_audio_maker = YandexSpeechKitAudioMaker()
 google_audio_maker = GoogleCloudAudioMaker()
 
 
-@router.post("/generation-tales", response_model=StoryGenerationResponse)
+@router.post("/generation-tale", response_model=StoryGenerationResponse)
 async def generate_tale_and_check_user(
         session: SessionDep,
         request: UserAccessRequest,

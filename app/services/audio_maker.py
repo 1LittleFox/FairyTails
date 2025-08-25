@@ -308,7 +308,7 @@ class GoogleCloudAudioMaker:
 
         self.bucket_name = os.getenv("SELECTEL_BUCKET_NAME")
 
-        self.max_chunk_size = 10000
+        self.max_chunk_size = 3500
 
     def remove_outer_speak_tags(self, ssml_text: str) -> str:
         """
@@ -468,7 +468,30 @@ class GoogleCloudAudioMaker:
         if len(audio_chunks) == 1:
             return audio_chunks[0]
 
-        return b''.join(audio_chunks)
+        # Создаем выходной буфер
+        output_buffer = io.BytesIO()
+
+        # Открываем первый файл, чтобы получить параметры
+        first_file = io.BytesIO(audio_chunks[0])
+        with wave.open(first_file, 'rb') as first_wav:
+            params = first_wav.getparams()
+
+            # Создаем выходной WAV файл с теми же параметрами
+            with wave.open(output_buffer, 'wb') as output_wav:
+                output_wav.setparams(params)
+
+                # Записываем данные из первого файла
+                output_wav.writeframes(first_wav.readframes(first_wav.getnframes()))
+
+                # Добавляем данные из остальных файлов
+                for chunk in audio_chunks[1:]:
+                    chunk_buffer = io.BytesIO(chunk)
+                    with wave.open(chunk_buffer, 'rb') as chunk_wav:
+                        # Просто добавляем аудио данные, игнорируя заголовки
+                        output_wav.writeframes(chunk_wav.readframes(chunk_wav.getnframes()))
+
+        # Возвращаем склеенный файл как bytes
+        return output_buffer.getvalue()
 
     async def create_audio_from_ssml(self, ssml_text: str,
                                      voice_name: str,
