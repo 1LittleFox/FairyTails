@@ -1,5 +1,6 @@
 import os
 from typing import Annotated
+from app.config import settings
 
 from dotenv import load_dotenv
 from fastapi import Depends
@@ -9,7 +10,7 @@ from sqlmodel import Session
 load_dotenv()
 
 #Получение из env url
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = settings.database_url
 
 #Создание асинхронного движка
 engine = create_async_engine(DATABASE_URL, echo=False)

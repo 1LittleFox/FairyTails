@@ -1,5 +1,4 @@
 import json
-import os
 import time
 from datetime import datetime, UTC
 
@@ -9,6 +8,7 @@ from openai import AsyncOpenAI
 from sqlalchemy import func
 from sqlmodel import select
 
+from app.config import settings
 from app.database import SessionDep
 from app.services.prompt_continue import prompt_continue_builder
 from app.schemas import FollowUpQuestionnaire, StoryGenerationResponse
@@ -19,9 +19,9 @@ from app.services.markup_prompt import create_markup_prompt_from_ru, create_mark
 load_dotenv()
 router = APIRouter()
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = "gpt-5"
-OPENAI_MODEL_FOR_MARKUP = "gpt-4o"
+OPENAI_API_KEY = settings.openai_api_key
+OPENAI_MODEL = settings.openai_model
+OPENAI_MODEL_FOR_MARKUP = settings.openai_model_for_markup
 
 
 @router.post("/stories/{story_id}/make_continue")

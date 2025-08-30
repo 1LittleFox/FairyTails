@@ -1,5 +1,4 @@
 import json
-import os
 import io
 import re
 import uuid
@@ -8,6 +7,7 @@ import boto3
 import aiohttp
 import wave
 
+from app.config import settings
 from datetime import datetime
 from dotenv import load_dotenv
 from google.cloud import texttospeech_v1 as texttospeech, storage
@@ -20,24 +20,24 @@ class YandexSpeechKitAudioMaker:
     """Класс для создания аудио через Yandex SpeechKit и загрузки в S3"""
 
     def __init__(self):
-        self.api_key = os.getenv("YANDEX_API_KEY")
-        self.folder_id = os.getenv("YANDEX_FOLDER_ID")
+        self.api_key = settings.yandex_api_key
+        self.folder_id = settings.yandex_folder_id
 
-        self.selectel_domain = os.getenv("SELECTEL_DOMAIN")
+        self.selectel_domain = settings.selectel_domain
 
         # Настраиваем Selectel S3
         self.s3_client = boto3.client(
             's3',
             endpoint_url='https://s3.ru-1.storage.selcloud.ru',
-            aws_access_key_id=os.getenv("SELECTEL_ACCESS_KEY"),
-            aws_secret_access_key=os.getenv("SELECTEL_SECRET_KEY"),
+            aws_access_key_id=settings.selectel_access_key,
+            aws_secret_access_key=settings.selectel_secret_key,
             region_name='ru-1',
             config=boto3.session.Config(
                 s3={'addressing_style': 'virtual'}
             )
         )
 
-        self.bucket_name = os.getenv("SELECTEL_BUCKET_NAME")
+        self.bucket_name = settings.selectel_bucket_name
 
         self.max_chunk_size = 4500
 
@@ -269,7 +269,7 @@ class GoogleCloudAudioMaker:
     """Класс для создания длинных аудио через Google Cloud TTS и загрузки в S3"""
 
     def __init__(self):
-        credentials_json = os.getenv("GOOGLE_CLOUD_CREDENTIALS")
+        credentials_json = settings.google_cloud_credentials
         if not credentials_json:
             raise ValueError("GOOGLE_CLOUD_CREDENTIALS environment variable not found")
 
@@ -277,7 +277,7 @@ class GoogleCloudAudioMaker:
         credentials_dict = json.loads(credentials_json)
         self.credentials = service_account.Credentials.from_service_account_info(credentials_dict)
 
-        self.project_id = os.getenv("GOOGLE_CLOUD_PROJECT_ID")
+        self.project_id = settings.google_cloud_project_id
 
         # Инициализируем клиент для длинных аудио
         self.long_audio_client = texttospeech.TextToSpeechLongAudioSynthesizeClient(
@@ -288,27 +288,27 @@ class GoogleCloudAudioMaker:
         self.gcs_client = storage.Client(credentials=self.credentials, project=self.project_id)
 
         # Настройки для временного GCS bucket (должен существовать)
-        self.temp_gcs_bucket = os.getenv("TEMP_GCS_BUCKET_NAME")
+        self.temp_gcs_bucket = settings.temp_gcs_bucket_name
         if not self.temp_gcs_bucket:
             raise ValueError("TEMP_GCS_BUCKET_NAME environment variable not found")
 
-        self.selectel_domain = os.getenv("SELECTEL_DOMAIN")
+        self.selectel_domain = settings.selectel_domain
 
         # Настраиваем Selectel S3
         self.s3_client = boto3.client(
             's3',
             endpoint_url='https://s3.ru-1.storage.selcloud.ru',
-            aws_access_key_id=os.getenv("SELECTEL_ACCESS_KEY"),
-            aws_secret_access_key=os.getenv("SELECTEL_SECRET_KEY"),
+            aws_access_key_id=settings.selectel_access_key,
+            aws_secret_access_key=settings.selectel_secret_key,
             region_name='ru-1',
             config=boto3.session.Config(
                 s3={'addressing_style': 'virtual'}
             )
         )
 
-        self.bucket_name = os.getenv("SELECTEL_BUCKET_NAME")
+        self.bucket_name = settings.selectel_bucket_name
 
-        self.max_chunk_size = 3500
+        self.max_chunk_size = 7000
 
     def remove_outer_speak_tags(self, ssml_text: str) -> str:
         """

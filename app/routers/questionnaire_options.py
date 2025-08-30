@@ -1,9 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 import i18n
-import os
 from typing import Optional
-
-from markupsafe import soft_str
 
 # Настройка i18n
 i18n.set('locale', 'en')  # английский по умолчанию

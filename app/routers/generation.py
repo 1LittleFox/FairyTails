@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException
 from openai import AsyncOpenAI
 from sqlmodel import select
 
+from app.config import settings
 from app.database import SessionDep
 from app.models import User, Collection, Story
 from app.schemas import Questionnaire, StoryGenerationResponse, UserAccessRequest
@@ -17,9 +18,9 @@ from app.services.prompt_builder import prompt_user_builder
 load_dotenv()
 router = APIRouter()
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = "gpt-5"
-OPENAI_MODEL_FOR_MARKUP = "gpt-4o"
+OPENAI_API_KEY = settings.openai_api_key
+OPENAI_MODEL = settings.openai_model
+OPENAI_MODEL_FOR_MARKUP = settings.openai_model_for_markup
 
 
 yandex_audio_maker = YandexSpeechKitAudioMaker()
