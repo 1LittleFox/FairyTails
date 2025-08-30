@@ -49,8 +49,7 @@ class Settings(BaseSettings):
 
     # === БЕЗОПАСНОСТЬ ===
     allowed_origins: List[str] = [
-        "http://127.0.0.1:8000",
-        "https://fairytails-zrdj.onrender.com"
+        "http://127.0.0.1:8000"
     ]
 
     # === НАСТРОЙКИ СЕРВЕРА ===
