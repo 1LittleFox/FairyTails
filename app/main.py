@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings, validate_all_settings
 from app.i18n_config import setup_i18n
 
-from app.routers import (home, all_users,
+from app.routers import (home, all_users, docs,
                          questionnaire_options, delete_story, delete_collection, all_collection,
                          collections_detail, generation, creating_sequels, display_stories)
 
@@ -29,7 +29,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     lifespan=lifespan,
-    debug=settings.debug
+    debug=settings.debug,
+    docs_url=None,
+    redoc_url=None
 )
 
 
@@ -38,6 +40,7 @@ app.add_middleware(CORSMiddleware, **cors_config)
 
 
 app.include_router(home.router)
+app.include_router(docs.router)
 app.include_router(creating_sequels.router)
 app.include_router(questionnaire_options.router)
 app.include_router(collections_detail.router)

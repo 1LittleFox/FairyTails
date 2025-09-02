@@ -52,6 +52,10 @@ class Settings(BaseSettings):
         "http://127.0.0.1:8000"
     ]
 
+    # === НАСТРОЙКА АУНТИФИКАЦИИ ===
+    docs_username: str
+    docs_password: str
+
     # === НАСТРОЙКИ СЕРВЕРА ===
     server_ip: Optional[str] = None
     server_domain: Optional[str] = None  # Когда получите домен

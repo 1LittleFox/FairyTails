@@ -124,7 +124,7 @@ class Questionnaire(BaseModel):
             if not (isinstance(item, str) and item.strip()):
                 raise ValueError("Отправлены пустые значения")
 
-        if not re.match(r"^[a-zA-Zа-яА-ЯёЁ\-\s]+$", subcategory_values[0]):
+        if not re.match(r'^[a-zA-Zа-яА-ЯёЁ0-9\-\s(),/]+$', subcategory_values[0]):
             raise ValueError("Используйте только буквы, пробел и дефис")
 
         category = values.get('interest_category')
@@ -142,8 +142,8 @@ class Questionnaire(BaseModel):
     def validate_target_words(cls, target_words):
         if len(target_words) < 1:
             raise ValueError("Минимум 1 слово")
-        if len(target_words) > 3:
-            raise ValueError("Максимум 3 слова")
+        if len(target_words) > 5:
+            raise ValueError("Максимум 5 слова")
         return target_words
 
 
