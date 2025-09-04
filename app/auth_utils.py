@@ -13,7 +13,14 @@ auth_logger = logging.getLogger("authentication")
 auth_logger.setLevel(logging.INFO)
 
 # Создаем handler для записи в файл
-auth_handler = logging.FileHandler('C:/FairyTails/auth.log')
+import os
+
+# Создаем директорию logs, если она не существует
+log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs')
+os.makedirs(log_dir, exist_ok=True)
+
+# Используем относительный путь для лог-файла
+auth_handler = logging.FileHandler(os.path.join(log_dir, 'auth.log'))
 auth_formatter = logging.Formatter(
     '%(asctime)s - AUTH - %(levelname)s - %(message)s'
 )
