@@ -1,0 +1,16 @@
+[Unit]
+Description=Fairytails FastAPI Test Application
+After=network.target
+
+[Service]
+Type=exec
+User=fairytails
+Group=fairytails
+WorkingDirectory=/home/fairytails/fairytails_project/FairyTails
+Environment=PATH=/home/fairytails/fairytails_project/FairyTails/.venv/bin
+ExecStart=/home/fairytails/fairytails_project/FairyTails/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
