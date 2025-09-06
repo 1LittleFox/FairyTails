@@ -114,7 +114,7 @@ def prompt_user_builder(data: Questionnaire) -> dict:
             Cultural tradition: {data.ethnography_choice} (incorporate motifs, archetypes, characters, metaphors, and moral lessons from this tradition)
             Story length requirement: Write a story that takes approximately {data.story_duration_minutes} minutes to read. This should result in roughly {word_range['min']} to {word_range['max']} characters. Focus on meeting the reading time rather than exact character count.
             Child's interests: {", ".join(data.subcategories)}
-            Target vocabulary: {", ".join(data.target_words)} (integrate naturally into text, use each word minimum 2 times, explain unfamiliar words through actions or dialogue)
+            Target vocabulary, translate them into the appropriate language of the fairy tale and use them: {", ".join(data.target_words)} (integrate naturally into text, use each word minimum 2 times, explain unfamiliar words through actions or dialogue)
             Target soft skills: {", ".join(data.soft_skills)} (develop through plot situations, dialogue, and character actions)
             
         DETAILED STRUCTURE:

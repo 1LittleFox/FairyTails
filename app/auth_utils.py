@@ -1,4 +1,5 @@
 # enhanced_auth_utils.py
+import os
 import secrets
 import logging
 from datetime import datetime, timedelta
@@ -12,8 +13,17 @@ from app.config import settings
 auth_logger = logging.getLogger("authentication")
 auth_logger.setLevel(logging.INFO)
 
+# Определяем путь к папке логов относительно текущего файла
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)  # поднимаемся на уровень выше от app/
+log_dir = os.path.join(project_root, 'logs')
+
+# Создаем папку логов, если её нет
+os.makedirs(log_dir, exist_ok=True)
+
 # Создаем handler для записи в файл
-auth_handler = logging.FileHandler('C:/FairyTails/auth.log')
+auth_log_path = os.path.join(log_dir, 'auth.log')
+auth_handler = logging.FileHandler(auth_log_path)
 auth_formatter = logging.Formatter(
     '%(asctime)s - AUTH - %(levelname)s - %(message)s'
 )
